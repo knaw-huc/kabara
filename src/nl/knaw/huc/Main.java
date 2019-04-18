@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Date;
 import java.util.Properties;
 
@@ -23,7 +24,19 @@ public class Main {
 
   public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException {
 
-    System.out.println(readProperties());
+    Properties props = readProperties();
+    System.out.println(props);
+
+  //   nu timbuctoo benaderen:
+  //  https://repository.huygens.knaw.nl/v5/resourcesync/sourceDescription.xml
+    URL sourceDescr = new URL(props.getProperty("resourcesync"));
+    BufferedReader in = new BufferedReader(
+      new InputStreamReader(sourceDescr.openStream()));
+
+    String inputLine;
+    while ((inputLine = in.readLine()) != null)
+      System.out.println(inputLine);
+    in.close();
 
   }
 
@@ -31,7 +44,6 @@ public class Main {
     Properties prop = new Properties();
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     InputStream stream = new FileInputStream("config.properties");
-    System.err.println(stream);
     InputStreamReader isr = new InputStreamReader(stream);
     prop.load(stream);
     return prop;
