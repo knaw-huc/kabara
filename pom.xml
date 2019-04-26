@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nl.knaw.huc.di</groupId>
+  <artifactId>kabara</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <repositories>
+
+    <!-- The OCLC harvester2 artifact is in the MPI repository
+	 (because the owner of the project does not currently make it
+	 available via Maven).
+      -->
+    <repository>
+      <id>MPI</id>
+      <name>MPI LAT Repository</name>
+      <url>http://lux15.mpi.nl/nexus/content/groups/public</url>
+    </repository>
+
+    <repository>
+      <id>CLARIN</id>
+      <name>CLARIN Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>CLARIN-Snapshot</id>
+      <name>CLARIN Snapshot Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>nl.mpi.tla</groupId>
+      <artifactId>SaxonUtils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>nl.knaw.huc</groupId>
+      <artifactId>resourcesync</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>system</scope>
+      <systemPath>C:/git/resourcesync/target/resourcesync-1.0.0-SNAPSHOT.jar</systemPath>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>make-assembly kabara</id> <!-- this is used for inheritance merges -->
+          <phase>package</phase> <!-- bind to the packaging phase -->
+          <goals>
+            <goal>single</goal>
+          </goals>
+          <configuration>
+            <archive>
+              <manifest>
+                <!-- manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile -->
+                <mainClass>nl.knaw.huc.di.kabara.Main</mainClass>
+              </manifest>
+            </archive>
+            <descriptorRefs>
+              <descriptorRef>jar-with-dependencies</descriptorRef>
+            </descriptorRefs>
+            <finalName>kabara</finalName>
+            <appendAssemblyId>false</appendAssemblyId>
+            <attach>false</attach>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>  </plugins>
+  </build>
+</project>

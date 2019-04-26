@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<kabara>
+  <timbuctoo>
+    <resourcesync>http://localhost:8080/.well-known/resourcesync</resourcesync>
+    <!-- extend with authentication if needed -->
+  </timbuctoo>
+  <triplestore>
+    <endpoint>http://localhost:8890/sparql-auth/</endpoint>
+    <!-- Virtuoso user with SPARQL Update rights -->
+    <user>demo</user>
+    <pass>demo</pass>
+  </triplestore>
+  <dataset id="clusius" href="http://timbuctoo.huygens.knaw.nl/datasets/clusius">
+    <synced><!-- timestamp of last successful sync --></synced>
+  </dataset>
+</kabara>
