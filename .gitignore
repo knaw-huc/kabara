@@ -4,6 +4,7 @@
 .settings
 .project
 /timbuctoo-instancev4/generated-sources
+logging.*
 
 # intellij files and folders
 *.iml

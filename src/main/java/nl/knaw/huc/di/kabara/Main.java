@@ -27,6 +27,8 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -35,6 +37,10 @@ public class Main {
     CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException, ParseException {
 
     XdmNode configs = Saxon.buildDocument(new StreamSource(args[0]));
+
+    Logger log = Logger.getLogger("Main");
+    log.getParent().setLevel(Level.OFF);
+    log.setLevel(Level.OFF);
 
     String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
     System.out.println("resourceSync: "+resourceSync);
