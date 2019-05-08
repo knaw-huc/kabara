@@ -10,6 +10,11 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileE
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.mpi.tla.util.Saxon;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.xml.sax.SAXException;
@@ -59,7 +64,13 @@ public class Main {
     Expedition expedition = new Expedition(httpclient,rsc);
     List<ResultIndex> result = expedition.explore(resourceSync, null);
 
-    ImportManager im = new ImportManager();
+    HttpHost target = new HttpHost("localhost", 8890, "http");
+    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials(
+      new AuthScope(target.getHostName(), target.getPort()),
+      new UsernamePasswordCredentials("demo", "demo"));
+
+    ImportManager im = new ImportManager(target, credsProvider);
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
     ResourceSyncImport.ResourceSyncReport result_rsi =
       rsi.filterAndImport("http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml", null, false, "", im,null, base, base);

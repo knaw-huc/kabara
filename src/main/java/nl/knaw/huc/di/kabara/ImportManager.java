@@ -3,8 +3,6 @@ package nl.knaw.huc.di.kabara;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,7 +11,6 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.auth.DigestScheme;
 import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -33,6 +30,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.download.ImportManager {
+  private final HttpHost target;
+  private final CredentialsProvider credsProvider;
+
+  public ImportManager(HttpHost target, CredentialsProvider credsProvider) {
+    this.target = target;
+    this.credsProvider = credsProvider;
+  }
+
   @Override
   public boolean isRdfTypeSupported(MediaType mediaType) {
     System.out.println(mediaType + " is Rdf Type Supported");
@@ -44,6 +49,13 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
                                      InputStream rdfInputStream,
                                      Optional<Charset> charset, MediaType mediaType) {
     System.out.println("addLog");
+
+    // HttpHost target = new HttpHost("localhost", 8890, "http");
+    // CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    // credsProvider.setCredentials(
+    //   new AuthScope(target.getHostName(), target.getPort()),
+    //   new UsernamePasswordCredentials("demo", "demo"));
+
     BufferedReader in = new BufferedReader(new InputStreamReader(rdfInputStream));
     int teller = 0;
     System.out.println("teller: " + teller);
@@ -86,13 +98,13 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
           // out.println(part + " .");
           // out.println(parts + " .");
           if (true) {
-            if (add)
-              out.println("add:");
-            else if (remove)
-              out.println("remove:");
-            out.println(
-              "subject: " + subject + "\n  predicate: " + predicate + "\n  object: " + object + "\n  context: " +
-                context + " .\n");
+            // if (add)
+            //   out.println("add:");
+            // else if (remove)
+            //   out.println("remove:");
+            // out.println(
+            //   "subject: " + subject + "\n  predicate: " + predicate + "\n  object: " + object + "\n  context: " +
+            //     context + " .\n");
             String sparQlOutput = "";
             if (add)
               sparQlOutput = "INSERT";
@@ -106,10 +118,10 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
               "            " + object + " .\n" +
               "    }\n" +
               "}\n";
-            out.println(sparQlOutput);
-            sendToSparQl(sparQlOutput, out);
+            // out.println(sparQlOutput);
+            sendToSparQl(sparQlOutput, out, credsProvider, target);
           }
-          // System.exit(1);
+          System.exit(1);
         }
         // out.println(line);
         line = in.readLine();
@@ -122,16 +134,11 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
     return null;
   }
 
-  private void sendToSparQl(String sparQlOutput, PrintWriter out) throws IOException {
+  private void sendToSparQl(String sparQlOutput, PrintWriter out, CredentialsProvider credsProvider, HttpHost target) throws IOException {
 
     // zoiets moet een 'query' er uitzien.
     // http://localhost:8890/sparql/endpoint?query=CREATE%20GRAPH%20%3Chttp://timbuctoo.huygens.knaw.nl/datasets/clusius%3E
 
-    HttpHost target = new HttpHost("localhost", 8890, "http");
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(
-      new AuthScope(target.getHostName(), target.getPort()),
-      new UsernamePasswordCredentials("demo", "demo"));
     CloseableHttpClient httpclient = HttpClients.custom()
                                                 .setDefaultCredentialsProvider(credsProvider)
                                                 .build();
