@@ -53,7 +53,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       // sendToSparQl("CREATE GRAPH <http://timbuctoo.huygens.knaw.nl/datasets/clusius>",out);
 
       String line = in.readLine();
-      while (line != null && (teller++ < 20)) {
+      while (line != null) { // && (teller++ < 20)) {
         System.out.println("rdf: " + line);
         for (String part : line.split(" \\.")) {
           // System.out.println("part: " + part);
@@ -85,7 +85,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
 
           // out.println(part + " .");
           // out.println(parts + " .");
-          if (teller>9) {
+          if (true) {
             if (add)
               out.println("add:");
             else if (remove)
@@ -93,7 +93,12 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
             out.println(
               "subject: " + subject + "\n  predicate: " + predicate + "\n  object: " + object + "\n  context: " +
                 context + " .\n");
-            String sparQlOutput = "INSERT DATA\n" +
+            String sparQlOutput = "";
+            if (add)
+              sparQlOutput = "INSERT";
+            else if (remove)
+              sparQlOutput = "DELETE";
+            sparQlOutput += " DATA\n" +
               "{\n" +
               "    GRAPH " + context + " {\n" +
               "        " + subject + "\n" +
@@ -167,16 +172,8 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
         try {
           out.println("----------------------------------------");
           out.println("" + response.getStatusLine());
-          PrintWriter htmlOut = new PrintWriter(
-            new BufferedWriter(new FileWriter("src/test/out/response.html", false)), true);
-          String line = EntityUtils.toString(response.getEntity());
-          // while (line!=null) {
-            htmlOut.println(line);
-            // line = responsIn.readLine();
-          // }
-          htmlOut.close();
-
-          // out.println(EntityUtils.toString(response.getEntity()));
+          out.println();
+          out.println(EntityUtils.toString(response.getEntity()));
         } finally {
           response.close();
         }
@@ -185,7 +182,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       httpclient.close();
     }
 
-    System.exit(1);
+    // System.exit(1);
 
 
   }
