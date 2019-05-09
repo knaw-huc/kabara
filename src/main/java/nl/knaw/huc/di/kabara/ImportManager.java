@@ -121,7 +121,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
             // out.println(sparQlOutput);
             sendToSparQl(sparQlOutput, out, credsProvider, target);
           }
-          System.exit(1);
+          // System.exit(1);
         }
         // out.println(line);
         line = in.readLine();

@@ -23,10 +23,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
@@ -50,30 +53,47 @@ public class Main {
     String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
     System.out.println("resourceSync: "+resourceSync);
 
-    System.out.println("endpoint: "+Saxon.xpath2string(configs, "/kabara/triplestore/endpoint"));
-    System.out.println("user: "+Saxon.xpath2string(configs, "/kabara/triplestore/user"));
-    System.out.println("pass: "+Saxon.xpath2string(configs, "/kabara/triplestore/pass"));
+    String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
+    String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
+    String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
     String dataset = Saxon.xpath2string(configs, "/kabara/dataset/@id");
-    System.out.println("dataset: "+ dataset);
     String base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
     String synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
+    System.out.println("endpoint: " + endpoint);
+    System.out.println("user: " + user);
+    System.out.println("pass: " + pass);
+    System.out.println("dataset: "+ dataset);
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
-    System.out.println(httpclient.getConnectionManager().getClass());
+    // System.out.println(httpclient.getConnectionManager().getClass());
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient,rsc);
     List<ResultIndex> result = expedition.explore(resourceSync, null);
 
-    HttpHost target = new HttpHost("localhost", 8890, "http");
+    PrintWriter out = new PrintWriter(
+      new BufferedWriter(
+        new FileWriter("src/test/out/result.txt",false)
+      ),
+      true);
+
+    // extract hostname, port, scheme from endpoint
+    String[] partsOfEndpoint = endpoint.split(":?/");
+    String hostname = partsOfEndpoint[2].split(":")[0];
+    int port = Integer.parseInt(partsOfEndpoint[2].split(":")[1]);
+    String scheme = partsOfEndpoint[0];
+
+    HttpHost target = new HttpHost(hostname, port, scheme);
     CredentialsProvider credsProvider = new BasicCredentialsProvider();
     credsProvider.setCredentials(
       new AuthScope(target.getHostName(), target.getPort()),
-      new UsernamePasswordCredentials("demo", "demo"));
+      new UsernamePasswordCredentials(user, pass));
 
     ImportManager im = new ImportManager(target, credsProvider);
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
+    String capabilityKistUri =
+      "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
-      rsi.filterAndImport("http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml", null, false, "", im,null, base, base);
+      rsi.filterAndImport(capabilityKistUri, null, false, "", im,null, base, base);
         //new SimpleDateFormat().parse(synced));
 
     // System.out.println("result_rsi: "+result_rsi.importedFiles);
