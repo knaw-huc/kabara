@@ -22,16 +22,11 @@ import org.xml.sax.SAXException;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Properties;
@@ -65,16 +60,9 @@ public class Main {
     System.out.println("dataset: "+ dataset);
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
-    // System.out.println(httpclient.getConnectionManager().getClass());
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient,rsc);
     List<ResultIndex> result = expedition.explore(resourceSync, null);
-
-    PrintWriter out = new PrintWriter(
-      new BufferedWriter(
-        new FileWriter("src/test/out/result.txt",false)
-      ),
-      true);
 
     // extract hostname, port, scheme from endpoint
     String[] partsOfEndpoint = endpoint.split(":?/");
@@ -94,7 +82,8 @@ public class Main {
       "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
       rsi.filterAndImport(capabilityKistUri, null, false, "", im,null, base, base);
-        //new SimpleDateFormat().parse(synced));
+
+    // new SimpleDateFormat().parse(synced));
 
     // System.out.println("result_rsi: "+result_rsi.importedFiles);
 
@@ -111,21 +100,7 @@ public class Main {
     //   // iterate Map
     // }
 
-    System.exit(1);
-
-    //   nu timbuctoo benaderen:
-    //  https://repository.huygens.knaw.nl/v5/resourcesync/sourceDescription.xml
-    URL sourceDescr = new URL(resourceSync);
-    BufferedReader in = new BufferedReader(
-      new InputStreamReader(sourceDescr.openStream()));
-
-    String inputLine;
-    while ((inputLine = in.readLine()) != null) {
-      String[] parts = inputLine.substring(1,inputLine.length()-1).split("><");
-      System.out.println(String.join(">\n<", parts));
-    }
-    in.close();
-    System.exit(1);
+    System.exit(0);
 
   }
 
