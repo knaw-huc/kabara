@@ -76,7 +76,7 @@ public class Main {
       new AuthScope(target.getHostName(), target.getPort()),
       new UsernamePasswordCredentials(user, pass));
 
-    ImportManager im = new ImportManager(target, credsProvider);
+    ImportManager im = new ImportManager(target, credsProvider, endpoint);
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
     String capabilityKistUri =
       "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";

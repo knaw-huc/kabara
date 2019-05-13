@@ -32,10 +32,13 @@ import java.util.regex.Pattern;
 public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.download.ImportManager {
   private final HttpHost target;
   private final CredentialsProvider credsProvider;
+  public static final Pattern P = Pattern.compile("^([+|-])(<[^>]+>) (<[^>]+>)(.*) (<[^>]+>)$");
+  private String sparqlUri;
 
-  public ImportManager(HttpHost target, CredentialsProvider credsProvider) {
+  public ImportManager(HttpHost target, CredentialsProvider credsProvider, String endpoint) {
     this.target = target;
     this.credsProvider = credsProvider;
+    this.sparqlUri = endpoint;
   }
 
   @Override
@@ -48,30 +51,12 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
                                      InputStream rdfInputStream,
                                      Optional<Charset> charset, MediaType mediaType) {
-    System.out.println("addLog");
-
-    // HttpHost target = new HttpHost("localhost", 8890, "http");
-    // CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    // credsProvider.setCredentials(
-    //   new AuthScope(target.getHostName(), target.getPort()),
-    //   new UsernamePasswordCredentials("demo", "demo"));
-
     BufferedReader in = new BufferedReader(new InputStreamReader(rdfInputStream));
-    int teller = 0;
-    System.out.println("teller: " + teller);
     try {
-      PrintWriter out = createOutputFile();
-
-      // sendToSparQl("CREATE GRAPH <http://timbuctoo.huygens.knaw.nl/datasets/clusius>",out);
-
       String line = in.readLine();
       while (line != null) { // && (teller++ < 20)) {
-        System.out.println("rdf: " + line);
         for (String part : line.split(" \\.")) {
-          // System.out.println("part: " + part);
-          Pattern p = Pattern.compile("^([+|-])(<[^>]+>) (<[^>]+>)(.*) (<[^>]+>)$");
-          // System.out.println("pattern: " + p);
-          Matcher m = p.matcher(part);
+          Matcher m = P.matcher(part);
           String subject = "";
           String predicate = "";
           String object = "";
@@ -85,65 +70,46 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
             predicate = m.group(3);
             object = m.group(4).trim();
             context = m.group(5);
-            // System.out.println("add/remove: " + m.group(1));
-            // System.out.println("subject: " + subject);
-            // System.out.println("predicate: " + predicate);
-            // System.out.println("object: " + object);
-            // System.out.println("context: " + context);
           } else {
             System.out.println("no match");
           }
-          // List<String> sublist = parts.subList(parts.size() - 4, parts.size() - 1);
-
-          // out.println(part + " .");
-          // out.println(parts + " .");
           if (true) {
-            // if (add)
-            //   out.println("add:");
-            // else if (remove)
-            //   out.println("remove:");
-            // out.println(
-            //   "subject: " + subject + "\n  predicate: " + predicate + "\n  object: " + object + "\n  context: " +
-            //     context + " .\n");
-            String sparQlOutput = "";
-            if (add)
-              sparQlOutput = "INSERT";
-            else if (remove)
-              sparQlOutput = "DELETE";
-            sparQlOutput += " DATA\n" +
-              "{\n" +
-              "    GRAPH " + context + " {\n" +
-              "        " + subject + "\n" +
-              "            " + predicate + "\n" +
-              "            " + object + " .\n" +
-              "    }\n" +
-              "}\n";
-            // out.println(sparQlOutput);
-            sendToSparQl(sparQlOutput, out, credsProvider, target);
+            String sparQlMutation = buildSparQlMutation(context, subject, predicate, object, add, remove);
+            sendToSparQl(sparQlMutation, credsProvider, target, sparqlUri);
           }
-          // System.exit(1);
         }
-        // out.println(line);
         line = in.readLine();
       }
       in.close();
-      out.close();
     } catch (IOException ex) {
       ex.printStackTrace();
     }
     return null;
   }
 
-  private void sendToSparQl(String sparQlOutput, PrintWriter out, CredentialsProvider credsProvider, HttpHost target) throws IOException {
+  private String buildSparQlMutation(String context, String subject, String predicate, String object, boolean add,
+                                     boolean remove) {
+    String result = "";
+    if (add)
+      result = "INSERT";
+    else if (remove)
+      result = "DELETE";
+    result += " DATA\n" +
+      "{\n" +
+      "    GRAPH " + context + " {\n" +
+      "            " + subject + "\n" +
+      "            " + predicate + "\n" +
+      "            " + object + " .\n" +
+      "    }\n" +
+      "}";
+    return result;
+  }
 
-    // zoiets moet een 'query' er uitzien.
-    // http://localhost:8890/sparql/endpoint?query=CREATE%20GRAPH%20%3Chttp://timbuctoo.huygens.knaw.nl/datasets/clusius%3E
-
+  private void sendToSparQl(String sparQlMutation, CredentialsProvider credsProvider, HttpHost target, String uri) throws IOException {
     CloseableHttpClient httpclient = HttpClients.custom()
                                                 .setDefaultCredentialsProvider(credsProvider)
                                                 .build();
     try {
-
       // Create AuthCache instance
       AuthCache authCache = new BasicAuthCache();
       // Generate DIGEST scheme object, initialize it and add it to the local
@@ -158,47 +124,29 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       // Add AuthCache to the execution context
       HttpClientContext localContext = HttpClientContext.create();
       localContext.setAuthCache(authCache);
-
-      HttpPost httppost = new HttpPost("http://localhost:8890/sparql-auth/");
-      // httppost.setHeader("Content-type", "text/html");
-
+      HttpPost httppost = new HttpPost(uri);
       MultipartEntityBuilder builder = MultipartEntityBuilder.create();
       builder.addTextBody("format", "application/sparql-results+xml");
-      builder.addTextBody("query", sparQlOutput);
-      // new File("src/test/out/spq_test.txt"));
-      // ContentType.create("text/plain", "UTF-8"), "src/test/out/spq_test.txt");
-      //   ContentType.create("application/sparql-results+xml")
+      builder.addTextBody("query", sparQlMutation);
       HttpEntity entity = builder.build();
-
       httppost.setEntity(entity);
-      out.println("Executing request " + httppost.getRequestLine() + " to target:\n  " + target);
-      out.println("entity: " + EntityUtils.toString(httppost.getEntity()));
+      // System.out.println("Executing request " + httppost.getRequestLine() + " to target:\n  " + target);
+      // System.out.println("entity: " + EntityUtils.toString(httppost.getEntity()));
 
-      for (int i = 0; i < 1; i++) {
-        CloseableHttpResponse response = httpclient.execute(target, httppost, localContext);
+      CloseableHttpResponse response = httpclient.execute(target, httppost, localContext);
         try {
-          out.println("----------------------------------------");
-          out.println("" + response.getStatusLine());
-          out.println();
-          out.println(EntityUtils.toString(response.getEntity()));
+          if(response.getStatusLine().getStatusCode()!=200) {
+            System.err.println("----------------------------------------");
+            System.err.println("" + response.getStatusLine());
+            System.err.println();
+            System.err.println(EntityUtils.toString(response.getEntity()));
+          }
         } finally {
           response.close();
         }
-      }
     } finally {
       httpclient.close();
     }
-
-    // System.exit(1);
-
-
-  }
-  private PrintWriter createOutputFile() throws IOException {
-    return new PrintWriter(
-      new BufferedWriter(
-        new FileWriter("src/test/out/result.txt",false)
-      ),
-      true);
   }
 
   @Override
