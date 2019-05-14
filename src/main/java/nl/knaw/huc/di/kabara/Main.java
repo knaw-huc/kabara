@@ -17,19 +17,28 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +46,8 @@ public class Main {
 
   public static void main(String[] args)
     throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
-    CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException, ParseException {
+    CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
+    TransformerException {
 
     XdmNode configs = Saxon.buildDocument(new StreamSource(args[0]));
 
@@ -59,6 +69,23 @@ public class Main {
     System.out.println("pass: " + pass);
     System.out.println("dataset: "+ dataset);
 
+    Date syncDate = null;
+    try {
+      System.out.println("start parse synced: " + synced);
+      syncDate = new SimpleDateFormat().parse(synced);
+      System.out.println("result parse synced: " + syncDate);
+      System.out.println(synced + ": " + syncDate);
+    } catch (ParseException pe) {
+      syncDate = new Date(0);
+      System.out.println("result parse synced: " + syncDate);
+    }
+    syncDate = new Date();
+    System.out.println("new synced: " + syncDate);
+
+    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, syncDate, args[0]);
+
+    System.exit(1);
+
     CloseableHttpClient httpclient = HttpClients.createMinimal();
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient,rsc);
@@ -78,12 +105,11 @@ public class Main {
 
     ImportManager im = new ImportManager(target, credsProvider, endpoint);
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
-    String capabilityKistUri =
+    String capabilityListUri =
       "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
-      rsi.filterAndImport(capabilityKistUri, null, false, "", im,null, base, base);
+      rsi.filterAndImport(capabilityListUri, null, false, "", im,null, base, base);
 
-    // new SimpleDateFormat().parse(synced));
 
     // System.out.println("result_rsi: "+result_rsi.importedFiles);
 
@@ -100,17 +126,59 @@ public class Main {
     //   // iterate Map
     // }
 
+    // datum (synced = Saxon.xpath2string(configs, "/kabara/dataset/synced") bijwerken
+    syncDate = new Date();
+    Saxon.save(configs.asSource(), new File(args[0]));
     System.exit(0);
 
   }
 
-  private static Properties readProperties() throws IOException {
-    Properties prop = new Properties();
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-    InputStream stream = new FileInputStream("config.properties");
-    InputStreamReader isr = new InputStreamReader(stream);
-    prop.load(stream);
-    return prop;
+  private static void makeNewConfigFile(String resourceSync, String endpoint, String user,
+                                        String pass, String dataset, String base,
+                                        Date syncDate, String configFile)
+    throws ParserConfigurationException, TransformerException {
+    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+    Document doc = dBuilder.newDocument();
+    // root element
+    Element rootElement = doc.createElement("kabara");
+    doc.appendChild(rootElement);
+    Element timbuctoo = doc.createElement("timbuctoo");
+    rootElement.appendChild(timbuctoo);
+    Element resourcesync = doc.createElement("resourcesync");
+    timbuctoo.appendChild(resourcesync);
+    resourcesync.appendChild(doc.createTextNode(resourceSync));
+
+    Element tripleStore = doc.createElement("triplestore");
+    rootElement.appendChild(tripleStore);
+    Element endPoint = doc.createElement("endpoint");
+    tripleStore.appendChild(endPoint);
+    endPoint.appendChild(doc.createTextNode(endpoint));
+    Element userE = doc.createElement("user");
+    userE.appendChild((doc.createTextNode(user)));
+    tripleStore.appendChild(userE);
+    Element passE = doc.createElement("pass");
+    passE.appendChild((doc.createTextNode(pass)));
+    tripleStore.appendChild(passE);
+
+    Element datasetE = doc.createElement("dataset");
+    Attr attrType = doc.createAttribute("id");
+    attrType.setValue(dataset);
+    datasetE.setAttributeNode(attrType);
+    attrType = doc.createAttribute("href");
+    attrType.setValue(base);
+    datasetE.setAttributeNode(attrType);
+    rootElement.appendChild(datasetE);
+    Element syncedE = doc.createElement("synced");
+    datasetE.appendChild(syncedE);
+    syncedE.appendChild(doc.createTextNode(syncDate.toString()));
+
+    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    Transformer transformer = null;
+      transformer = transformerFactory.newTransformer();
+      DOMSource source = new DOMSource(doc);
+      StreamResult result = new StreamResult(new File(configFile));
+      transformer.transform(source, result);
   }
 
 }
