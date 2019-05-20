@@ -3,6 +3,7 @@ package nl.knaw.huc.di.kabara;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Expedition;
+import nl.knaw.huygens.timbuctoo.remote.rs.discover.Result;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndex;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
@@ -34,11 +35,15 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,27 +74,41 @@ public class Main {
     System.out.println("pass: " + pass);
     System.out.println("dataset: "+ dataset);
 
+    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
+    DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    df.setLenient(true);
     Date syncDate = null;
+    String newSyncDate = null;
     try {
-      System.out.println("start parse synced: " + synced);
-      syncDate = new SimpleDateFormat().parse(synced);
-      System.out.println("result parse synced: " + syncDate);
-      System.out.println(synced + ": " + syncDate);
+      syncDate = sdf.parse(synced);
     } catch (ParseException pe) {
-      syncDate = new Date(0);
-      System.out.println("result parse synced: " + syncDate);
+      syncDate = new Date();
     }
-    syncDate = new Date();
-    System.out.println("new synced: " + syncDate);
+    newSyncDate = sdf.format(new Date());
+    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, args[0]);
+    // System.exit(1);
 
-    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, syncDate, args[0]);
-
-    System.exit(1);
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient,rsc);
+    Expedition.createWellKnownUri(new URI(resourceSync));
+
+    System.err.println("get result");
     List<ResultIndex> result = expedition.explore(resourceSync, null);
+    System.err.println("na get result");
+    for(ResultIndex ri : result) {
+      Map<URI, Result<?>> rm = ri.getResultMap();
+      System.err.println("results: " + rm);
+      for(URI rmk : rm.keySet()) {
+
+        Result<?> a = rm.get(rmk);
+        System.err.println(rmk);
+        System.err.println(a);
+      }
+      System.err.flush();
+    }
+    // System.exit(1);
 
     // extract hostname, port, scheme from endpoint
     String[] partsOfEndpoint = endpoint.split(":?/");
@@ -105,10 +124,10 @@ public class Main {
 
     ImportManager im = new ImportManager(target, credsProvider, endpoint);
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
-    String capabilityListUri =
-      "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
+    String capabilityListUri = resourceSync;
+      // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
-      rsi.filterAndImport(capabilityListUri, null, false, "", im,null, base, base);
+      rsi.filterAndImport(capabilityListUri, null, true, "", im, syncDate, base, base);
 
 
     // System.out.println("result_rsi: "+result_rsi.importedFiles);
@@ -135,7 +154,7 @@ public class Main {
 
   private static void makeNewConfigFile(String resourceSync, String endpoint, String user,
                                         String pass, String dataset, String base,
-                                        Date syncDate, String configFile)
+                                        String syncDate, String configFile)
     throws ParserConfigurationException, TransformerException {
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
