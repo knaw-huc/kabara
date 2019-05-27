@@ -121,6 +121,9 @@ public class Main {
       new UsernamePasswordCredentials(user, pass));
 
     ImportManager im = new ImportManager(target, credsProvider, endpoint);
+    if(!update) {
+      im.createDb("CREATE GRAPH <" + base + ">;");
+    }
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
     String capabilityListUri = resourceSync;
       // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";

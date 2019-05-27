@@ -67,12 +67,10 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
             predicate = m.group(3);
             object = m.group(4).trim();
             context = m.group(5);
-          } else {
-            System.out.println("no match");
-          }
-          if (true) {
             String sparQlMutation = buildSparQlMutation(context, subject, predicate, object, add, remove);
             sendToSparQl(sparQlMutation, credsProvider, target, sparqlUri);
+          } else {
+            System.out.println("no match");
           }
         }
         line = in.readLine();
@@ -82,6 +80,10 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       ex.printStackTrace();
     }
     return null;
+  }
+
+  public void createDb(String sparQlMutation) throws IOException {
+    sendToSparQl(sparQlMutation, credsProvider, target, sparqlUri);
   }
 
   private String buildSparQlMutation(String context, String subject, String predicate, String object, boolean add,
