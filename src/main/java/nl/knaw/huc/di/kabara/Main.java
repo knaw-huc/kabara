@@ -79,15 +79,13 @@ public class Main {
     df.setLenient(true);
     Date syncDate = null;
     String newSyncDate = null;
+    boolean update = false;
     try {
       syncDate = sdf.parse(synced);
+      update = true;
     } catch (ParseException pe) {
       syncDate = new Date();
     }
-    newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, args[0]);
-    // System.exit(1);
-
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
     ResourceSyncContext rsc = new ResourceSyncContext();
@@ -127,7 +125,7 @@ public class Main {
     String capabilityListUri = resourceSync;
       // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
-      rsi.filterAndImport(capabilityListUri, null, true, "", im, syncDate, base, base);
+      rsi.filterAndImport(capabilityListUri, null, update, "", im, syncDate, base, base);
 
 
     // System.out.println("result_rsi: "+result_rsi.importedFiles);
@@ -145,9 +143,9 @@ public class Main {
     //   // iterate Map
     // }
 
-    // datum (synced = Saxon.xpath2string(configs, "/kabara/dataset/synced") bijwerken
-    syncDate = new Date();
-    Saxon.save(configs.asSource(), new File(args[0]));
+    newSyncDate = sdf.format(new Date());
+    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, args[0]);
+
     System.exit(0);
 
   }
@@ -194,10 +192,10 @@ public class Main {
 
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
     Transformer transformer = null;
-      transformer = transformerFactory.newTransformer();
-      DOMSource source = new DOMSource(doc);
-      StreamResult result = new StreamResult(new File(configFile));
-      transformer.transform(source, result);
+    transformer = transformerFactory.newTransformer();
+    DOMSource source = new DOMSource(doc);
+    StreamResult result = new StreamResult(new File(configFile));
+    transformer.transform(source, result);
   }
 
 }
