@@ -16,17 +16,17 @@ Preparations:
 
 How to use Kabara:
 
-- adjust config.xml (it can be found in: src/test/resources/config.xml, but
+adjust config.xml (it can be found in: src/test/resources/config.xml, but
   can be placed anywhere).
 
-- config.xml  contains tags for:
- -- resourcesync: where to get the data; in this example the locally running
+config.xml  contains tags for:
+ - resourcesync: where to get the data; in this example the locally running
     Timbuctoo
- -- trimplestore endpoint: where to send the data; in this example the locally
+ - trimplestore endpoint: where to send the data; in this example the locally
     running Virtuoso/SparQL
- -- user and pass for the SparQL
- -- dataset: how to name the dataset in SparQL
- -- synced: date and time of last run
+ - user and pass for the SparQL
+ - dataset: how to name the dataset in SparQL
+ - synced: date and time of last run
 
 Kabara is run with config.xml as parameter (complete or relative path).
 After a succesfull run synced in set to the date and time of this run and
