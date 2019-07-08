@@ -3,7 +3,7 @@ Sync a Timbuctoo dataset with a triple store
 
 __You need:__
 - Java 1.8
-- SparQL (virtuoso)
+- SparQL (virtuoso) (https://github.com/openlink/virtuoso-opensource)
 - ResourceSync (https://github.com/knaw-huc/resourcesync.git)
 - Timbuctoo (https://github.com/HuygensING/timbuctoo.git) (to use kabara locally)
 - Kabara (https://github.com/knaw-huc/kabara.git)
