@@ -21,7 +21,7 @@ __How to use Kabara:__
 
 - config.xml  contains tags for:
    - resourcesync: where to get the data; in this example the locally running
-    Timbuctoo
+    Timbuctoo (exampl. http://[timbuctoo_domein]/v5/resourcesync/[user_id]/[dataset_id]/capabilitylist.xml)
    - trimplestore endpoint: where to send the data; in this example the locally
     running Virtuoso/SparQL
    - user and pass for the SparQL
