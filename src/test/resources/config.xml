@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <kabara>
   <timbuctoo>
-    <resourcesync>http://localhost:8080/.well-known/resourcesync</resourcesync>
+	  <resourcesync>https://goldenagents.jauco.nl/v5/resourcesync/ufab7d657a250e3461361c982ce9b38f3816e0c4b/index_op_begraafregisters_20190509/capabilitylist.xml</resourcesync>
+	  <timeout>15000</timeout>
     <!-- extend with authentication if needed -->
   </timbuctoo>
   <triplestore>

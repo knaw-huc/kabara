@@ -62,6 +62,7 @@ public class Main {
 
     String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
     System.out.println("resourceSync: "+resourceSync);
+    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
 
     String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
     String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
@@ -124,7 +125,7 @@ public class Main {
     if(!update) {
       im.createDb("CREATE GRAPH <" + base + ">;");
     }
-    ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient), true);
+    ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
     String capabilityListUri = resourceSync;
       // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport result_rsi =
