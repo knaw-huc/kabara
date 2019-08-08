@@ -9,8 +9,7 @@ __You need:__
 - Kabara (https://github.com/knaw-huc/kabara.git)
 
 __Preparations:__
-- compile ResourceSync to get a jar;
-- add this jar to the kabara pom.xml
+- mvn clean install ResourceSync (add ResourceSync to local maven);
 - compile Kabara (to a jar if you want to run kabara from a prompt)
 - make sure Timbuctoo and SparQl are running (see their repective manuals)
 
