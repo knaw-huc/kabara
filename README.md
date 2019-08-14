@@ -15,6 +15,13 @@ __Preparations:__
 
 __How to use Kabara:__
 
+- Start Kabara: ./[path]/kabara.jar server kabara.yml
+
+  It will wait for a curl POST to start work.
+
+- File kabara.yml contains: ports for application and admin connectors (adjust them if your local timbuctoo and/or
+sparql use the same ports).
+
 - Adjust config.xml (it can be found in: src/test/resources/config.xml, but
   can be placed anywhere).
 
@@ -28,8 +35,10 @@ __How to use Kabara:__
    - dataset: how to name the dataset in SparQL
    - synced: date and time of last run
 
-Kabara is run with config.xml as parameter (complete or relative path).
-After a succesfull run synced in set to the date and time of this run and
+Kabara is run by sending a curl command, for example:
+`curl -X POST -d config=/Users/meindertkroese/git/kabara/src/test/resources/config.xml http://localhost:9001/tasks/runKabara`
+ with config.xml as parameter (absolute path). The 9001 in this example is the adminConnector as set in kabara.yml.
+After a succesfull run synced is set to the date and time of this run and
 config.xml is saved.
 
 If synced is empty (for example at the first run) it is presumed a new SparQL

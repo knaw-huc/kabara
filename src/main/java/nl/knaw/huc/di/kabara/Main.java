@@ -53,8 +53,15 @@ public class Main {
     throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
     CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
     TransformerException {
+    start(args[0]);
+  }
 
-    XdmNode configs = Saxon.buildDocument(new StreamSource(args[0]));
+  public static void start(String arg)
+          throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
+          CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
+          TransformerException {
+
+    XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
 
     Logger log = Logger.getLogger("Main");
     log.getParent().setLevel(Level.OFF);
@@ -148,7 +155,7 @@ public class Main {
     // }
 
     newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, args[0]);
+    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, arg);
 
     System.exit(0);
 
