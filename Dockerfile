@@ -20,13 +20,13 @@ WORKDIR /build/kabara
 COPY ./ ./
 COPY ./pom.xml ./pom.xml
 
-RUN javac -version
-
 RUN chmod +x ./target/appassembler/bin/kabara
 
 COPY ./kabara.yml ./kabara.yml
 
-RUN pwd
+# example! Make sure these are the same as in kabara.yml
+EXPOSE 9000
+EXPOSE 9001
 
 CMD ["./target/appassembler/bin/kabara", "server", "kabara.yml"]
 
