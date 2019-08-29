@@ -20,29 +20,13 @@ WORKDIR /build/kabara
 COPY ./ ./
 COPY ./pom.xml ./pom.xml
 
-#RUN mvn clean package
-
 RUN javac -version
 
 RUN chmod +x ./target/appassembler/bin/kabara
 
-#RUN ls
-
-#RUN rm -r ./*
-
-#RUN ls
-
-#COPY ./pom.xml ./pom.xml
-
 COPY ./kabara.yml ./kabara.yml
 
-#RUN ls
 RUN pwd
 
-#CMD ["./target/kabara-1.0-SNAPSHOT.jar", "server", "kabara.yml"]
 CMD ["./target/appassembler/bin/kabara", "server", "kabara.yml"]
-
-
-#RUN mvn clean package
-
 
