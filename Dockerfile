@@ -25,7 +25,9 @@ RUN chmod +x ./target/appassembler/bin/kabara
 COPY ./kabara.yml ./kabara.yml
 
 # example! Make sure these are the same as in kabara.yml
+# for GET
 EXPOSE 9000
+# for POST
 EXPOSE 9001
 
 CMD ["./target/appassembler/bin/kabara", "server", "kabara.yml"]

@@ -18,6 +18,8 @@ __How to use Kabara:__
 - Start Kabara: ./[path]/kabara.jar server kabara.yml
 
   It will wait for a curl POST to start work.
+  
+  Kabara can run as a docker container, see below.
 
 - File kabara.yml contains: ports for application and admin connectors (adjust them if your local timbuctoo and/or
 sparql use the same ports).
@@ -44,3 +46,14 @@ config.xml is saved.
 If synced is empty (for example at the first run) it is presumed a new SparQL
 db is to be made. If synced is not empty only data changed (in Timbuctoo)
 since the last run is sent to SparQl.
+
+With a `GET` you can check if Kabara is properly started: `localhost:9000/kabara`.
+
+__Kabara in docker__
+
+Dockerize Kabara, for example: `docker build --tag=kabara:1 .`
+
+Run Kabara, for example: `docker run -p9000:9000 -p9001:9001 kabara:1`
+
+The `-p`'s in the above line are necessary to make the exposed ports in your 
+`Dockerfile` communicate with the outside world.
