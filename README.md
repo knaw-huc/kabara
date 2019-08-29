@@ -36,7 +36,7 @@ sparql use the same ports).
    - synced: date and time of last run
 
 Kabara is run by sending a curl command, for example:
-`curl -X POST -d config=/Users/meindertkroese/git/kabara/src/test/resources/config.xml http://localhost:9001/tasks/runKabara`
+`curl -X POST -d config=<path>/config.xml http://localhost:9001/tasks/runKabara`
  with config.xml as parameter (absolute path). The 9001 in this example is the adminConnector as set in kabara.yml.
 After a succesfull run synced is set to the date and time of this run and
 config.xml is saved.
