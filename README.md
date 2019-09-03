@@ -62,4 +62,4 @@ Also possible:
 
 `docker-compose up`
 
-Don't forget to change the ports if necessary!
+Don't forget to change the port numbers in `docker-compose.yaml` if necessary!
