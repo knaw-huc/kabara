@@ -57,3 +57,9 @@ Run Kabara, for example: `docker run -p9000:9000 -p9001:9001 kabara:1`
 
 The `-p`'s in the above line are necessary to make the exposed ports in your 
 `Dockerfile` communicate with the outside world.
+
+Also possible:
+
+`docker-compose up`
+
+Don't forget to change the ports if necessary!
