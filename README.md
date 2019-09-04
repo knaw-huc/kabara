@@ -69,9 +69,9 @@ __Kabara in kubernetes__
 Make sure you have an account on https://cloud.docker.com/
 
 Next steps:
-1. docker build -t huygensing/kabara:0.1.0 .
-2. docker login
-3. docker push huygensing/kabara:0.1.0
-4. kubectl apply -f kabara-service.yaml,kabara-deployment.yaml 
-5. kubectl get pods
-6. kubectl port-forward kabara-76865c8b45-hstmm 9000:9000
+1. `docker build -t huygensing/kabara:0.1.0 .`
+2. `docker login`
+3. `docker push huygensing/kabara:0.1.0`
+4. `kubectl apply -f kabara-service.yaml,kabara-deployment.yaml`
+5. `kubectl get pods`
+6. `kubectl port-forward kabara-76865c8b45-hstmm 9000:9000`
