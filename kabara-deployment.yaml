@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.18.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kabara
+  name: kabara
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: kabara
+    spec:
+      containers:
+      - image: huygensing/kabara:0.1.0
+        name: kabara
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+        resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+      restartPolicy: Always
+status: {}
