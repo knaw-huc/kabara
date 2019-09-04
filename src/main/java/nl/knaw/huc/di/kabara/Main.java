@@ -50,16 +50,16 @@ import java.util.logging.Logger;
 public class Main {
 
   public static void main(String[] args)
-    throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
-    CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
-    TransformerException {
+      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
+      CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
+      TransformerException {
     start(args[0]);
   }
 
   public static void start(String arg)
-          throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
-          CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
-          TransformerException {
+      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
+      CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
+      TransformerException {
 
     XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
 
@@ -68,8 +68,7 @@ public class Main {
     log.setLevel(Level.OFF);
 
     String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
-    System.out.println("resourceSync: "+resourceSync);
-    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
+    System.out.println("resourceSync: " + resourceSync);
 
     String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
     String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
@@ -80,13 +79,12 @@ public class Main {
     System.out.println("endpoint: " + endpoint);
     System.out.println("user: " + user);
     System.out.println("pass: " + pass);
-    System.out.println("dataset: "+ dataset);
+    System.out.println("dataset: " + dataset);
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     df.setLenient(true);
     Date syncDate = null;
-    String newSyncDate = null;
     boolean update = false;
     try {
       syncDate = sdf.parse(synced);
@@ -97,20 +95,20 @@ public class Main {
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
     ResourceSyncContext rsc = new ResourceSyncContext();
-    Expedition expedition = new Expedition(httpclient,rsc);
+    Expedition expedition = new Expedition(httpclient, rsc);
     Expedition.createWellKnownUri(new URI(resourceSync));
 
     System.err.println("get result");
     List<ResultIndex> result = expedition.explore(resourceSync, null);
     System.err.println("na get result");
-    for(ResultIndex ri : result) {
+    for (ResultIndex ri : result) {
       Map<URI, Result<?>> rm = ri.getResultMap();
       System.err.println("results: " + rm);
-      for(URI rmk : rm.keySet()) {
+      for (URI rmk : rm.keySet()) {
 
-        Result<?> a = rm.get(rmk);
+        Result<?> result1 = rm.get(rmk);
         System.err.println(rmk);
-        System.err.println(a);
+        System.err.println(result1);
       }
       System.err.flush();
     }
@@ -125,21 +123,22 @@ public class Main {
     HttpHost target = new HttpHost(hostname, port, scheme);
     CredentialsProvider credsProvider = new BasicCredentialsProvider();
     credsProvider.setCredentials(
-      new AuthScope(target.getHostName(), target.getPort()),
-      new UsernamePasswordCredentials(user, pass));
+        new AuthScope(target.getHostName(), target.getPort()),
+        new UsernamePasswordCredentials(user, pass));
 
     ImportManager im = new ImportManager(target, credsProvider, endpoint);
-    if(!update) {
+    if (!update) {
       im.createDb("CREATE GRAPH <" + base + ">;");
     }
+    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
     String capabilityListUri = resourceSync;
-      // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
-    ResourceSyncImport.ResourceSyncReport result_rsi =
-      rsi.filterAndImport(capabilityListUri, null, update, "", im, syncDate, base, base);
+    // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
+    ResourceSyncImport.ResourceSyncReport resultRsi =
+        rsi.filterAndImport(capabilityListUri, null, update, "", im, syncDate, base, base);
 
 
-    // System.out.println("result_rsi: "+result_rsi.importedFiles);
+    // System.out.println("resultRsi: "+result_rsi.importedFiles);
 
     // for(ResultIndex ri : result) {
     //   System.out.println("count: "+ri.getCount());
@@ -154,20 +153,19 @@ public class Main {
     //   // iterate Map
     // }
 
-    newSyncDate = sdf.format(new Date());
+    String newSyncDate = sdf.format(new Date());
     makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, arg);
 
     System.exit(0);
-
   }
 
   private static void makeNewConfigFile(String resourceSync, String endpoint, String user,
                                         String pass, String dataset, String base,
                                         String syncDate, String configFile)
-    throws ParserConfigurationException, TransformerException {
+      throws ParserConfigurationException, TransformerException {
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-    Document doc = dBuilder.newDocument();
+    DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
+    Document doc = documentBuilder.newDocument();
     // root element
     Element rootElement = doc.createElement("kabara");
     doc.appendChild(rootElement);

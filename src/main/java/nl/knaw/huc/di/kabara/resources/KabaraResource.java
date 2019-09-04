@@ -13,17 +13,17 @@ import java.util.concurrent.atomic.AtomicLong;
 @Path("/kabara")
 @Produces(MediaType.APPLICATION_JSON)
 public class KabaraResource {
-    private final String template;
-    private final AtomicLong counter;
+  private final String template;
+  private final AtomicLong counter;
 
-    public KabaraResource(String template) {
-        this.template = template;
-        this.counter = new AtomicLong();
-    }
+  public KabaraResource(String template) {
+    this.template = template;
+    this.counter = new AtomicLong();
+  }
 
-    @GET
-    @Timed
-    public Saying sayHello() {
-        return new Saying(counter.incrementAndGet(), "Kabara active");
-    }
+  @GET
+  @Timed
+  public Saying sayHello() {
+    return new Saying(counter.incrementAndGet(), "Kabara active");
+  }
 }

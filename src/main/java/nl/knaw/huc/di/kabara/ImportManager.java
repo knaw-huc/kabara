@@ -53,20 +53,20 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       String line = in.readLine();
       while (line != null) { // && (teller++ < 20)) {
         for (String part : line.split(" \\.")) {
-          Matcher m = P.matcher(part);
+          Matcher matcher = P.matcher(part);
           String subject = "";
           String predicate = "";
           String object = "";
           String context = "";
           boolean add = false;
           boolean remove = false;
-          if(m.matches()) {
-            add = m.group(1).equals("+");
-            remove = m.group(1).equals("-");
-            subject = m.group(2);
-            predicate = m.group(3);
-            object = m.group(4).trim();
-            context = m.group(5);
+          if (matcher.matches()) {
+            add = matcher.group(1).equals("+");
+            remove = matcher.group(1).equals("-");
+            subject = matcher.group(2);
+            predicate = matcher.group(3);
+            object = matcher.group(4).trim();
+            context = matcher.group(5);
             String sparQlMutation = buildSparQlMutation(context, subject, predicate, object, add, remove);
             sendToSparQl(sparQlMutation, credsProvider, target, sparqlUri);
           } else {
@@ -89,22 +89,24 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
   private String buildSparQlMutation(String context, String subject, String predicate, String object, boolean add,
                                      boolean remove) {
     String result = "";
-    if (add)
+    if (add) {
       result = "INSERT";
-    else if (remove)
+    } else if (remove) {
       result = "DELETE";
+    }
     result += " DATA\n" +
-      "{\n" +
-      "    GRAPH " + context + " {\n" +
-      "            " + subject + "\n" +
-      "            " + predicate + "\n" +
-      "            " + object + " .\n" +
-      "    }\n" +
-      "}";
+        "{\n" +
+        "    GRAPH " + context + " {\n" +
+        "            " + subject + "\n" +
+        "            " + predicate + "\n" +
+        "            " + object + " .\n" +
+        "    }\n" +
+        "}";
     return result;
   }
 
-  private void sendToSparQl(String sparQlMutation, CredentialsProvider credsProvider, HttpHost target, String uri) throws IOException {
+  private void sendToSparQl(String sparQlMutation, CredentialsProvider credsProvider, HttpHost target, String uri)
+      throws IOException {
     CloseableHttpClient httpclient = HttpClients.custom()
                                                 .setDefaultCredentialsProvider(credsProvider)
                                                 .build();
@@ -133,16 +135,16 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       // System.out.println("entity: " + EntityUtils.toString(httppost.getEntity()));
 
       CloseableHttpResponse response = httpclient.execute(target, httppost, localContext);
-        try {
-          if(response.getStatusLine().getStatusCode()!=200) {
-            System.err.println("----------------------------------------");
-            System.err.println("" + response.getStatusLine());
-            System.err.println();
-            System.err.println(EntityUtils.toString(response.getEntity()));
-          }
-        } finally {
-          response.close();
+      try {
+        if (response.getStatusLine().getStatusCode() != 200) {
+          System.err.println("----------------------------------------");
+          System.err.println("" + response.getStatusLine());
+          System.err.println();
+          System.err.println(EntityUtils.toString(response.getEntity()));
         }
+      } finally {
+        response.close();
+      }
     } finally {
       httpclient.close();
     }
