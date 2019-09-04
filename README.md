@@ -9,7 +9,7 @@ __You need:__
 - Kabara (https://github.com/knaw-huc/kabara.git)
 
 __Preparations:__
-- mvn clean install ResourceSync (add ResourceSync to local maven);
+- mvn clean install ResourceSync (add ResourceSync to local mmeaven);
 - compile Kabara (to a jar if you want to run kabara from a prompt)
 - make sure Timbuctoo and SparQl are running (see their repective manuals)
 
@@ -74,4 +74,5 @@ Next steps:
 3. `docker push huygensing/kabara:0.1.0`
 4. `kubectl apply -f kabara-service.yaml,kabara-deployment.yaml`
 5. `kubectl get pods`
-6. `kubectl port-forward kabara-76865c8b45-hstmm 9000:9000`
+6. use the name found in the previous step (and use the same port numbers as
+ in `kabara-deployment.yaml`) in this last step: `kubectl port-forward kabara-76865c8b45-hstmm 9000:9000`
