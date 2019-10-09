@@ -25,14 +25,11 @@ public class Kabara extends Application<KabaraConfiguration> {
   public void run(KabaraConfiguration configuration,
                   Environment environment) {
     final KabaraResource resource = new KabaraResource(
-        configuration.getTemplate()
-    //  configuration.getDefaultName()
+        configuration.getTemplate(),
+        configuration.getConfigFileName()
     );
-    environment.admin().addTask(new RunKabaraTask());
-    //        Main.main(null);
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();
-    //                new TemplateHealthCheck(configuration.getTemplate());
     environment.healthChecks().register("template", healthCheck);
     // virtuoso afhankelijkheid !!!
     environment.jersey().register(resource);

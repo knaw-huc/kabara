@@ -53,10 +53,10 @@ public class Main {
       throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
-    start(args[0]);
+    start(args[0],"");
   }
 
-  public static void start(String arg)
+  public static void start(String arg, String dataset)
       throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
@@ -73,7 +73,7 @@ public class Main {
     String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
     String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
     String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
-    String dataset = Saxon.xpath2string(configs, "/kabara/dataset/@id");
+    // String dataset = Saxon.xpath2string(configs, "/kabara/dataset/@id");
     String base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
     String synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
     System.out.println("endpoint: " + endpoint);
