@@ -1,5 +1,7 @@
 package nl.knaw.huc.di.kabara;
 
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Expedition;
@@ -11,6 +13,11 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileE
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.mpi.tla.util.Saxon;
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -18,6 +25,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,37 +57,52 @@ import java.util.logging.Logger;
 
 public class Main {
 
+  static Log log = LogFactory.getLog("Main");
+
   public static void main(String[] args)
       throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
-    start(args[0],"");
+    start(args[0], "");
   }
 
-  public static void start(String arg, String dataset)
+  public static ResourceSyncImport.ResourceSyncReport start(String arg, String dataset)
       throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
 
     XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
 
-    Logger log = Logger.getLogger("Main");
-    log.getParent().setLevel(Level.OFF);
-    log.setLevel(Level.OFF);
+    // log.getParent().setLevel(Level.OFF);
+    // log.setLevel(Level.OFF);
 
-    String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
-    System.out.println("resourceSync: " + resourceSync);
+    // String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
+    // System.out.println("resourceSync: " + resourceSync);
 
     String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
     String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
     String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
-    // String dataset = Saxon.xpath2string(configs, "/kabara/dataset/@id");
+    String path = Saxon.xpath2string(configs, "/kabara/triplestore/path");
     String base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
     String synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
+    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
     System.out.println("endpoint: " + endpoint);
+    System.out.println("path: " + path);
     System.out.println("user: " + user);
     System.out.println("pass: " + pass);
     System.out.println("dataset: " + dataset);
+    System.out.println("timeout: " + timeout);
+
+    log.info("start solving SSL problem");
+
+    String urlString = dataset;
+    // "https://repository.huygens.knaw.nl/v5/resourcesync/u74ccc032adf8422d7ea92df96cd4783f0543db3b/dwc" +
+    //     "/capabilitylist.xml";
+
+    Unirest.config().verifySsl(false);
+    HttpResponse<String> response = Unirest.get(urlString)
+                                           .asString();
+    log.info(String.format("Response body: %s", response.getBody()));
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
@@ -93,13 +116,17 @@ public class Main {
       syncDate = new Date();
     }
 
+
+    // Protocol easyhttps = new Protocol("https", new EasySslProtocolSocketFactory(), 443);
+    // Protocol.registerProtocol("https", easyhttps);
     CloseableHttpClient httpclient = HttpClients.createMinimal();
+    // HttpClient httpclient = new HttpClient();
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient, rsc);
-    Expedition.createWellKnownUri(new URI(resourceSync));
+    Expedition.createWellKnownUri(new URI(dataset));
 
     System.err.println("get result");
-    List<ResultIndex> result = expedition.explore(resourceSync, null);
+    List<ResultIndex> result = expedition.explore(dataset, null);
     System.err.println("na get result");
     for (ResultIndex ri : result) {
       Map<URI, Result<?>> rm = ri.getResultMap();
@@ -112,51 +139,24 @@ public class Main {
       }
       System.err.flush();
     }
-    // System.exit(1);
 
-    // extract hostname, port, scheme from endpoint
-    String[] partsOfEndpoint = endpoint.split(":?/");
-    String hostname = partsOfEndpoint[2].split(":")[0];
-    int port = Integer.parseInt(partsOfEndpoint[2].split(":")[1]);
-    String scheme = partsOfEndpoint[0];
-
-    HttpHost target = new HttpHost(hostname, port, scheme);
+    HttpHost target = HttpHost.create(endpoint);
     CredentialsProvider credsProvider = new BasicCredentialsProvider();
     credsProvider.setCredentials(
         new AuthScope(target.getHostName(), target.getPort()),
         new UsernamePasswordCredentials(user, pass));
 
-    ImportManager im = new ImportManager(target, credsProvider, endpoint);
+    ImportManager im = new ImportManager(target, credsProvider, endpoint + "/" + path);
     if (!update) {
       im.createDb("CREATE GRAPH <" + base + ">;");
     }
-    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
-    String capabilityListUri = resourceSync;
-    // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport resultRsi =
-        rsi.filterAndImport(capabilityListUri, null, update, "", im, syncDate, base, base);
-
-
-    // System.out.println("resultRsi: "+result_rsi.importedFiles);
-
-    // for(ResultIndex ri : result) {
-    //   System.out.println("count: "+ri.getCount());
-    //   Map<URI, Result<?>> rm = ri.getResultMap();
-    //   System.out.println(rm);
-    //   System.out.println(rm.keySet());
-    //   System.out.println(rm.values());
-    //   Iterator<URI> iter = rm.keySet().iterator();
-    //   while(iter.hasNext()) {
-    //     System.out.println(iter.next());
-    //   }
-    //   // iterate Map
-    // }
+        rsi.filterAndImport(dataset, null, update, "", im, syncDate, dataset, base);
 
     String newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, arg);
-
-    System.exit(0);
+    makeNewConfigFile(dataset, endpoint, user, pass, dataset, base, newSyncDate, arg);
+    return resultRsi;
   }
 
   private static void makeNewConfigFile(String resourceSync, String endpoint, String user,

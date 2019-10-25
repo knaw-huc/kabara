@@ -38,9 +38,10 @@ sparql use the same ports).
    - synced: date and time of last run
 
 Kabara is run by sending a curl command, for example:
-`curl -X POST -d '{ "dataSet": "clusius" }' -H 'content-type: application/json' http://localhost:9000/kabara`
- with config.xml as parameter (absolute path). The 9001 in this example is the adminConnector as set in kabara.yml.
-After a succesfull run synced is set to the date and time of this run and
+```
+curl -X POST -d '{ "dataSet": "https://repository.huygens.knaw.nl/v5/resourcesync/u74ccc032adf8422d7ea92df96cd4783f0543db3b/dwc/capabilitylist.xml1" }' -H 'content-type: application/json' http://localhost:9000/kabara
+```
+After a successful run synced is set to the date and time of this run and
 config.xml is saved.
 
 If synced is empty (for example at the first run) it is presumed a new SparQL
