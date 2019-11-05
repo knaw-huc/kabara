@@ -1,7 +1,5 @@
 package nl.knaw.huc.di.kabara;
 
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Expedition;
