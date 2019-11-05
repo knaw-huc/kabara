@@ -87,14 +87,6 @@ public class Main {
     System.out.println("dataset: " + dataset);
     System.out.println("timeout: " + timeout);
 
-    log.info("start solving SSL problem");
-
-    String urlString = dataset;
-    Unirest.config().verifySsl(false);
-    HttpResponse<String> response = Unirest.get(urlString)
-                                           .asString();
-    log.info(String.format("Response body: %s", response.getBody()));
-
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     df.setLenient(true);
