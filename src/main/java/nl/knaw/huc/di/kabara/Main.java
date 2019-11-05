@@ -73,12 +73,6 @@ public class Main {
 
     XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
 
-    // log.getParent().setLevel(Level.OFF);
-    // log.setLevel(Level.OFF);
-
-    // String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
-    // System.out.println("resourceSync: " + resourceSync);
-
     String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
     String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
     String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
@@ -96,9 +90,6 @@ public class Main {
     log.info("start solving SSL problem");
 
     String urlString = dataset;
-    // "https://repository.huygens.knaw.nl/v5/resourcesync/u74ccc032adf8422d7ea92df96cd4783f0543db3b/dwc" +
-    //     "/capabilitylist.xml";
-
     Unirest.config().verifySsl(false);
     HttpResponse<String> response = Unirest.get(urlString)
                                            .asString();
@@ -116,11 +107,7 @@ public class Main {
       syncDate = new Date();
     }
 
-
-    // Protocol easyhttps = new Protocol("https", new EasySslProtocolSocketFactory(), 443);
-    // Protocol.registerProtocol("https", easyhttps);
     CloseableHttpClient httpclient = HttpClients.createMinimal();
-    // HttpClient httpclient = new HttpClient();
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient, rsc);
     Expedition.createWellKnownUri(new URI(dataset));
