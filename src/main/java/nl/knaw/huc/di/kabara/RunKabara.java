@@ -11,9 +11,6 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileE
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.mpi.tla.util.Saxon;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
@@ -23,7 +20,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,41 +46,42 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class Main {
+public class RunKabara {
 
-  static Log log = LogFactory.getLog("Main");
+  static Log log = LogFactory.getLog("RunKabara");
+  private static String synced;
+  private static String user;
+  private static String pass;
+  private static String endpoint;
+  private static String path;
+  private static String base;
+  private static String configfilename;
+  private static int timeout;
 
-  public static void main(String[] args)
-      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
-      CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
-      TransformerException {
-    start(args[0], "");
+  public RunKabara(String args) throws SaxonApiException {
+    configfilename = args;
+    XdmNode configs = Saxon.buildDocument(new StreamSource(configfilename));
+    user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
+    pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
+    endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
+    path = Saxon.xpath2string(configs, "/kabara/triplestore/path");
+    base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
+    synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
+    timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
+    log.info("endpoint: " + endpoint);
+    log.info("path: " + path);
+    log.info("user: " + user);
+    log.info("pass: " + pass);
+    log.info("timeout: " + timeout);
   }
 
-  public static ResourceSyncImport.ResourceSyncReport start(String arg, String dataset)
-      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
+  public ResourceSyncImport.ResourceSyncReport start(String dataset)
+      throws IOException, ParserConfigurationException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
 
-    XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
-
-    String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
-    String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
-    String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
-    String path = Saxon.xpath2string(configs, "/kabara/triplestore/path");
-    String base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
-    String synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
-    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
-    System.out.println("endpoint: " + endpoint);
-    System.out.println("path: " + path);
-    System.out.println("user: " + user);
-    System.out.println("pass: " + pass);
-    System.out.println("dataset: " + dataset);
-    System.out.println("timeout: " + timeout);
-
+    log.info("dataset: " + dataset);
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     df.setLenient(true);
@@ -132,13 +129,11 @@ public class Main {
         rsi.filterAndImport(dataset, null, update, "", im, syncDate, dataset, base);
 
     String newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(dataset, endpoint, user, pass, dataset, base, newSyncDate, arg);
+    makeNewConfigFile(dataset, newSyncDate);
     return resultRsi;
   }
 
-  private static void makeNewConfigFile(String resourceSync, String endpoint, String user,
-                                        String pass, String dataset, String base,
-                                        String syncDate, String configFile)
+  private void makeNewConfigFile(String dataset, String syncDate)
       throws ParserConfigurationException, TransformerException {
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
@@ -148,9 +143,9 @@ public class Main {
     doc.appendChild(rootElement);
     Element timbuctoo = doc.createElement("timbuctoo");
     rootElement.appendChild(timbuctoo);
-    Element resourcesync = doc.createElement("resourcesync");
-    timbuctoo.appendChild(resourcesync);
-    resourcesync.appendChild(doc.createTextNode(resourceSync));
+    Element resourceSync = doc.createElement("resourcesync");
+    timbuctoo.appendChild(resourceSync);
+    resourceSync.appendChild(doc.createTextNode(dataset));
 
     Element tripleStore = doc.createElement("triplestore");
     rootElement.appendChild(tripleStore);
@@ -180,7 +175,7 @@ public class Main {
     Transformer transformer = null;
     transformer = transformerFactory.newTransformer();
     DOMSource source = new DOMSource(doc);
-    StreamResult result = new StreamResult(new File(configFile));
+    StreamResult result = new StreamResult(new File(configfilename));
     transformer.transform(source, result);
   }
 
