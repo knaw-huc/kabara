@@ -11,6 +11,8 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileE
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.mpi.tla.util.Saxon;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -44,43 +46,42 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class Main {
+public class RunKabara {
 
-  public static void main(String[] args)
-      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
-      CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
-      TransformerException {
-    start(args[0]);
+  static Log log = LogFactory.getLog("RunKabara");
+  private static String synced;
+  private static String user;
+  private static String pass;
+  private static String endpoint;
+  private static String path;
+  private static String base;
+  private static String configfilename;
+  private static int timeout;
+
+  public RunKabara(String args) throws SaxonApiException {
+    configfilename = args;
+    XdmNode configs = Saxon.buildDocument(new StreamSource(configfilename));
+    user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
+    pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
+    endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
+    path = Saxon.xpath2string(configs, "/kabara/triplestore/path");
+    base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
+    synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
+    timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
+    log.info("endpoint: " + endpoint);
+    log.info("path: " + path);
+    log.info("user: " + user);
+    log.info("pass: " + pass);
+    log.info("timeout: " + timeout);
   }
 
-  public static void start(String arg)
-      throws IOException, SAXException, ParserConfigurationException, SaxonApiException, CantRetrieveFileException,
+  public ResourceSyncImport.ResourceSyncReport start(String dataset)
+      throws IOException, ParserConfigurationException, CantRetrieveFileException,
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
 
-    XdmNode configs = Saxon.buildDocument(new StreamSource(arg));
-
-    Logger log = Logger.getLogger("Main");
-    log.getParent().setLevel(Level.OFF);
-    log.setLevel(Level.OFF);
-
-    String resourceSync = Saxon.xpath2string(configs, "/kabara/timbuctoo/resourcesync");
-    System.out.println("resourceSync: " + resourceSync);
-
-    String user = Saxon.xpath2string(configs, "/kabara/triplestore/user");
-    String pass = Saxon.xpath2string(configs, "/kabara/triplestore/pass");
-    String endpoint = Saxon.xpath2string(configs, "/kabara/triplestore/endpoint");
-    String dataset = Saxon.xpath2string(configs, "/kabara/dataset/@id");
-    String base = Saxon.xpath2string(configs, "/kabara/dataset/@href");
-    String synced = Saxon.xpath2string(configs, "/kabara/dataset/synced");
-    System.out.println("endpoint: " + endpoint);
-    System.out.println("user: " + user);
-    System.out.println("pass: " + pass);
-    System.out.println("dataset: " + dataset);
-
+    log.info("dataset: " + dataset);
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     df.setLenient(true);
@@ -96,10 +97,10 @@ public class Main {
     CloseableHttpClient httpclient = HttpClients.createMinimal();
     ResourceSyncContext rsc = new ResourceSyncContext();
     Expedition expedition = new Expedition(httpclient, rsc);
-    Expedition.createWellKnownUri(new URI(resourceSync));
+    Expedition.createWellKnownUri(new URI(dataset));
 
     System.err.println("get result");
-    List<ResultIndex> result = expedition.explore(resourceSync, null);
+    List<ResultIndex> result = expedition.explore(dataset, null);
     System.err.println("na get result");
     for (ResultIndex ri : result) {
       Map<URI, Result<?>> rm = ri.getResultMap();
@@ -112,56 +113,27 @@ public class Main {
       }
       System.err.flush();
     }
-    // System.exit(1);
 
-    // extract hostname, port, scheme from endpoint
-    String[] partsOfEndpoint = endpoint.split(":?/");
-    String hostname = partsOfEndpoint[2].split(":")[0];
-    int port = Integer.parseInt(partsOfEndpoint[2].split(":")[1]);
-    String scheme = partsOfEndpoint[0];
-
-    HttpHost target = new HttpHost(hostname, port, scheme);
+    HttpHost target = HttpHost.create(endpoint);
     CredentialsProvider credsProvider = new BasicCredentialsProvider();
     credsProvider.setCredentials(
         new AuthScope(target.getHostName(), target.getPort()),
         new UsernamePasswordCredentials(user, pass));
 
-    ImportManager im = new ImportManager(target, credsProvider, endpoint);
+    ImportManager im = new ImportManager(target, credsProvider, endpoint + "/" + path);
     if (!update) {
       im.createDb("CREATE GRAPH <" + base + ">;");
     }
-    int timeout = Integer.parseInt(Saxon.xpath2string(configs, "/kabara/timbuctoo/timeout"));
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
-    String capabilityListUri = resourceSync;
-    // "http://localhost:8080/v5/resourcesync/u33707283d426f900d4d33707283d426f900d4d0d/clusius/capabilitylist.xml";
     ResourceSyncImport.ResourceSyncReport resultRsi =
-        rsi.filterAndImport(capabilityListUri, null, update, "", im, syncDate, base, base);
-
-
-    // System.out.println("resultRsi: "+result_rsi.importedFiles);
-
-    // for(ResultIndex ri : result) {
-    //   System.out.println("count: "+ri.getCount());
-    //   Map<URI, Result<?>> rm = ri.getResultMap();
-    //   System.out.println(rm);
-    //   System.out.println(rm.keySet());
-    //   System.out.println(rm.values());
-    //   Iterator<URI> iter = rm.keySet().iterator();
-    //   while(iter.hasNext()) {
-    //     System.out.println(iter.next());
-    //   }
-    //   // iterate Map
-    // }
+        rsi.filterAndImport(dataset, null, update, "", im, syncDate, dataset, base);
 
     String newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(resourceSync, endpoint, user, pass, dataset, base, newSyncDate, arg);
-
-    System.exit(0);
+    makeNewConfigFile(dataset, newSyncDate);
+    return resultRsi;
   }
 
-  private static void makeNewConfigFile(String resourceSync, String endpoint, String user,
-                                        String pass, String dataset, String base,
-                                        String syncDate, String configFile)
+  private void makeNewConfigFile(String dataset, String syncDate)
       throws ParserConfigurationException, TransformerException {
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
@@ -171,9 +143,9 @@ public class Main {
     doc.appendChild(rootElement);
     Element timbuctoo = doc.createElement("timbuctoo");
     rootElement.appendChild(timbuctoo);
-    Element resourcesync = doc.createElement("resourcesync");
-    timbuctoo.appendChild(resourcesync);
-    resourcesync.appendChild(doc.createTextNode(resourceSync));
+    Element resourceSync = doc.createElement("resourcesync");
+    timbuctoo.appendChild(resourceSync);
+    resourceSync.appendChild(doc.createTextNode(dataset));
 
     Element tripleStore = doc.createElement("triplestore");
     rootElement.appendChild(tripleStore);
@@ -203,7 +175,7 @@ public class Main {
     Transformer transformer = null;
     transformer = transformerFactory.newTransformer();
     DOMSource source = new DOMSource(doc);
-    StreamResult result = new StreamResult(new File(configFile));
+    StreamResult result = new StreamResult(new File(configfilename));
     transformer.transform(source, result);
   }
 

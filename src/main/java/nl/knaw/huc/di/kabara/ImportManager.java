@@ -138,6 +138,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       try {
         if (response.getStatusLine().getStatusCode() != 200) {
           System.err.println("----------------------------------------");
+          System.err.println("target: " + target.toURI());
           System.err.println("" + response.getStatusLine());
           System.err.println();
           System.err.println(EntityUtils.toString(response.getEntity()));

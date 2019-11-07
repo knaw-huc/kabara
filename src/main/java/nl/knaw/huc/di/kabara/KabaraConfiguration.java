@@ -9,6 +9,8 @@ public class KabaraConfiguration extends Configuration {
   private String test;
   @NotEmpty
   private String template;
+  @NotEmpty
+  private String configFileName;
 
   @JsonProperty
   public String getTemplate() {
@@ -25,4 +27,13 @@ public class KabaraConfiguration extends Configuration {
     return test;
   }
 
+  @JsonProperty
+  public void setConfigFileName(String configFileName) {
+    this.configFileName = configFileName;
+  }
+
+  @JsonProperty
+  public String getConfigFileName() {
+    return configFileName;
+  }
 }

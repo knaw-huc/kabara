@@ -3,10 +3,46 @@ package nl.knaw.huc.di.kabara;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.sf.saxon.s9api.SaxonApiException;
 import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 
 public class Kabara extends Application<KabaraConfiguration> {
+
+  private static final Logger logger = LoggerFactory.getLogger(Kabara.class.getName());
+
+  static {
+    try {
+      SSLContext sc = SSLContext.getInstance("TLS");
+      sc.init(null, new TrustManager[]{new X509TrustManager() {
+        public X509Certificate[] getAcceptedIssuers() {
+          return null;
+        }
+
+        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+        }
+
+        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+        }
+      }
+      }, null);
+      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    } catch (NoSuchAlgorithmException | KeyManagementException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void main(String[] args) throws Exception {
     new Kabara().run(args);
   }
@@ -23,16 +59,13 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void run(KabaraConfiguration configuration,
-                  Environment environment) {
+                  Environment environment) throws IOException, SaxonApiException {
     final KabaraResource resource = new KabaraResource(
-        configuration.getTemplate()
-    //  configuration.getDefaultName()
+        configuration.getTemplate(),
+        configuration.getConfigFileName()
     );
-    environment.admin().addTask(new RunKabaraTask());
-    //        Main.main(null);
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();
-    //                new TemplateHealthCheck(configuration.getTemplate());
     environment.healthChecks().register("template", healthCheck);
     // virtuoso afhankelijkheid !!!
     environment.jersey().register(resource);

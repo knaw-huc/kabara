@@ -7,3 +7,4 @@ server:
     - type: http
       port: 9001
 template: Kabara is active
+configFileName: ./src/test/resources/config.xml
