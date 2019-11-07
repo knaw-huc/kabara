@@ -3,6 +3,7 @@ package nl.knaw.huc.di.kabara;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.sf.saxon.s9api.SaxonApiException;
 import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void run(KabaraConfiguration configuration,
-                  Environment environment) throws IOException {
+                  Environment environment) throws IOException, SaxonApiException {
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
         configuration.getConfigFileName()

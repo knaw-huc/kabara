@@ -1,6 +1,7 @@
 package nl.knaw.huc.di.kabara.resources;
 
 import com.codahale.metrics.annotation.Timed;
+import net.sf.saxon.s9api.SaxonApiException;
 import nl.knaw.huc.di.kabara.RunKabara;
 import nl.knaw.huc.di.kabara.api.Saying;
 import nl.knaw.huc.di.kabara.api.SyncRequest;
@@ -21,11 +22,13 @@ public class KabaraResource {
   private final String template;
   private final String configFileName;
   private final AtomicLong counter;
+  private final RunKabara runKabara;
 
-  public KabaraResource(String template, String configFileName) {
+  public KabaraResource(String template, String configFileName) throws SaxonApiException {
     this.template = template;
     this.configFileName = configFileName;
     this.counter = new AtomicLong();
+    runKabara = new RunKabara(configFileName);
   }
 
   @GET
@@ -38,10 +41,7 @@ public class KabaraResource {
   public Response syncDataSet(SyncRequest request) {
     LoggerFactory.getLogger(KabaraResource.class).info("dataset, {}" , request.getDataSet());
     try {
-      RunKabara runKabara = new RunKabara(configFileName);
       runKabara.start(request.getDataSet());
-      // hier x = new Main(configFileName)
-      // x.start(request.getDataSet());
     } catch (Exception e) {
       e.printStackTrace();
     }
