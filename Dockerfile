@@ -20,6 +20,8 @@ WORKDIR /build/kabara
 COPY ./ ./
 COPY ./pom.xml ./pom.xml
 
+RUN mvn clean package
+
 RUN chmod +x ./target/appassembler/bin/kabara
 
 COPY ./kabara.yml ./kabara.yml
