@@ -52,9 +52,9 @@ With a `GET` you can check if Kabara is properly started: `localhost:9000/kabara
 
 __Kabara in docker__
 
-Dockerize Kabara, for example: `docker build --tag=kabara:1 .`
+Dockerize Kabara, for example: `docker build --tag=kabara:local .`
 
-Run Kabara, for example: `docker run -p9000:9000 -p9001:9001 kabara:1`
+Run Kabara, for example: `docker run -p9000:9000 -p9001:9001 kabara:local`
 
 The `-p`'s in the above line are necessary to make the exposed ports in your 
 `Dockerfile` communicate with the outside world.
@@ -64,16 +64,3 @@ Also possible:
 `docker-compose up`
 
 Don't forget to change the port numbers in `docker-compose.yaml` if necessary!
-
-__Kabara in kubernetes__
-
-Make sure you have an account on https://cloud.docker.com/
-
-Next steps:
-1. `docker build -t huygensing/kabara:0.1.0 .`
-2. `docker login`
-3. `docker push huygensing/kabara:0.1.0`
-4. `kubectl apply -f kabara-service.yaml,kabara-deployment.yaml`
-5. `kubectl get pods`
-6. use the name found in the previous step (and use the same port numbers as
- in `kabara-deployment.yaml`) in this last step: `kubectl port-forward kabara-76865c8b45-hstmm 9000:9000`
