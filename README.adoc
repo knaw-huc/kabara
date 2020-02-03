@@ -1,0 +1,58 @@
+= Kabara [Alpha]
+
+Sync a Timbuctoo dataset with a triple store
+
+== Requirements
+
+* Java 1.8
+* SparQL (virtuoso) (https://github.com/openlink/virtuoso-opensource)
+* ResourceSync (https://github.com/knaw-huc/resourcesync.git)
+* Timbuctoo (https://github.com/HuygensING/timbuctoo.git)
+
+== Getting started
+
+. Clone repository: `git clone git@github.com:knaw-huc/kabara.git`
+. compile Kabara: `mvn clean package`
+. make sure Timbuctoo and Virtuoso are running (see their repective manuals)
+. Start Kabara: ./target/appassembler/bin/kabara server kabara.yml
+. Check if Kabara is running: `curl localhost:9000/kabara`.
+
+== Kabara in docker
+
+. Clone repository: `git clone git@github.com:knaw-huc/kabara.git`
+. Dockerize Kabara, for example: `docker build --tag=kabara:local .`
+. Run Kabara and Virtuoso: `docker-compose up`
+
+Change the port numbers in `docker-compose.yaml` if necessary!
+
+== Synchronizing data
+
+The data will be synchronized using Resourcesync.
+Go to your Timbuctoo instance Resourcesync: http(s)://<timbuctoo-host>/.well-known/resourcesync +
+
+Choose a data set and execute the following command:
+----
+curl -X POST -d '{ "dataSet": "http(s)://<timbuctoo-host>/v5/resourcesync/<userId>/<dataset>/capabilitylist.xml" }' -H 'content-type: application/json' http://<kabara-host>/kabara
+----
+
+* `kabara-host` is localhost:9000 if you are running Kabara locally.
+* `timbuctoo-host`: see https://github.com/HuygensING/timbuctoo.git on how to start Timbuctoo and how to create and publish a data set.
+* The complete data set url will be found in http(s)://<timbuctoo-host>/.well-known/resourcesync
+
+The data synchronization may take a while, please be patient.
+
+== Configuration
+
+* File kabara.yml contains: ports for application and admin connectors (adjust them if your local timbuctoo and/or
+sparql use the same ports).
+
+* Adjust config.xml (it can be found in: src/test/resources/config.xml, but
+ can be placed anywhere).
+
+* config.xml contains tags for:
+
+* timeout: in milliseconds (in the example on 15000; can be adjusted to match the need)
+* trimplestore endpoint: where to send the data; in this example the locally running Virtuoso/SparQL
+* user and pass for the SparQL
+* dataset: how to name the dataset in SparQL [DEPRECATED]
+* synced: date and time of last run
