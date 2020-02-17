@@ -9,10 +9,6 @@ public class Saying {
   @Length(max = 3)
   private String content;
 
-  public Saying() {
-    // Jackson deserialization
-  }
-
   public Saying(long id, String content) {
     this.id = id;
     this.content = content;

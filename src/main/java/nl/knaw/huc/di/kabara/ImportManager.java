@@ -131,8 +131,6 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       builder.addTextBody("query", sparQlMutation);
       HttpEntity entity = builder.build();
       httppost.setEntity(entity);
-      // System.out.println("Executing request " + httppost.getRequestLine() + " to target:\n  " + target);
-      // System.out.println("entity: " + EntityUtils.toString(httppost.getEntity()));
 
       CloseableHttpResponse response = httpclient.execute(target, httppost, localContext);
       try {
@@ -153,8 +151,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
 
   @Override
   public void addFile(InputStream inputStream, String fileName, MediaType mediaType) {
-    System.out.println("addFile");
-
+    System.out.println("addFile (does nothing!");
   }
 
 }
