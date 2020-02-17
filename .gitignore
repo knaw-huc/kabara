@@ -10,3 +10,4 @@ classes/
 dependency-reduced-pom.xml
 out/
 target/
+data/
