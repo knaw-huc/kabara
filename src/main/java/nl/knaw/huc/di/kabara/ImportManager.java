@@ -107,7 +107,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
 
   private void sendToSparQl(String sparQlMutation, CredentialsProvider credsProvider, HttpHost target, String uri)
       throws IOException {
-    CloseableHttpClient httpclient = HttpClients.custom()
+    CloseableHttpClient httpClient = HttpClients.custom()
                                                 .setDefaultCredentialsProvider(credsProvider)
                                                 .build();
     try {
@@ -132,7 +132,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
       HttpEntity entity = builder.build();
       httppost.setEntity(entity);
 
-      CloseableHttpResponse response = httpclient.execute(target, httppost, localContext);
+      CloseableHttpResponse response = httpClient.execute(target, httppost, localContext);
       try {
         if (response.getStatusLine().getStatusCode() != 200) {
           System.err.println("----------------------------------------");
@@ -145,7 +145,7 @@ public class ImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.downlo
         response.close();
       }
     } finally {
-      httpclient.close();
+      httpClient.close();
     }
   }
 
