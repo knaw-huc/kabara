@@ -118,11 +118,17 @@
       <version>8.29</version>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/commons-httpclient/commons-httpclient -->
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
+    </dependency>
+
+    <!-- For processing the rdf from Timbuctoo -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-nquads</artifactId>
+      <version>3.1.0</version>
     </dependency>
 
   </dependencies>
