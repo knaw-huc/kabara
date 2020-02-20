@@ -17,6 +17,8 @@ import javax.ws.rs.core.Response;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -27,11 +29,13 @@ public class KabaraResource {
   private final String configFileName;
   private final AtomicLong counter;
   private final RunKabara runKabara;
+  private final ExecutorService executor;
 
-  public KabaraResource(String template, String configFileName)
+  public KabaraResource(String template, String configFileName, ExecutorService executor)
       throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
     this.template = template;
     this.configFileName = configFileName;
+    this.executor = executor;
     this.counter = new AtomicLong();
     runKabara = new RunKabara(configFileName);
   }
@@ -45,11 +49,18 @@ public class KabaraResource {
   @POST
   public Response syncDataSet(SyncRequest request) {
     LoggerFactory.getLogger(KabaraResource.class).info("dataset, {}" , request.getDataSet());
-    try {
-      runKabara.start(request.getDataSet());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    Callable<String> callableTask = new Callable<String>() {
+      @Override
+      public String call() throws Exception {
+        try {
+          runKabara.start(request.getDataSet());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return "ok";
+      }
+    };
+    executor.submit(callableTask);
     return Response.ok().build();
   }
 }

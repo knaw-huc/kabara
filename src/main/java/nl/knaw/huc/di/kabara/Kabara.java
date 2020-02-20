@@ -19,10 +19,13 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Kabara extends Application<KabaraConfiguration> {
 
   private static final Logger logger = LoggerFactory.getLogger(Kabara.class.getName());
+  private static ExecutorService executor = Executors.newFixedThreadPool(2);
 
   static {
     try {
@@ -63,7 +66,8 @@ public class Kabara extends Application<KabaraConfiguration> {
   public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
-        configuration.getConfigFileName()
+        configuration.getConfigFileName(),
+        executor
     );
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();
