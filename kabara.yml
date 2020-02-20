@@ -1,4 +1,3 @@
-test: "test"
 server:
   applicationConnectors:
     - type: http

@@ -23,7 +23,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -99,19 +98,9 @@ public class RunKabara {
     Expedition expedition = new Expedition(httpclient, rsc);
     Expedition.createWellKnownUri(new URI(dataset));
 
-    System.err.println("get result");
     List<ResultIndex> result = expedition.explore(dataset, null);
-    System.err.println("na get result");
     for (ResultIndex ri : result) {
       Map<URI, Result<?>> rm = ri.getResultMap();
-      System.err.println("results: " + rm);
-      for (URI rmk : rm.keySet()) {
-
-        Result<?> result1 = rm.get(rmk);
-        System.err.println(rmk);
-        System.err.println(result1);
-      }
-      System.err.flush();
     }
 
     HttpHost target = HttpHost.create(endpoint);

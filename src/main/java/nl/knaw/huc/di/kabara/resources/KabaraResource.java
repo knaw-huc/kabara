@@ -33,7 +33,7 @@ public class KabaraResource {
 
   @GET
   @Timed
-  public Saying sayHello() {
+  public Saying checkActive() {
     return new Saying(counter.incrementAndGet(), "Kabara active");
   }
 
