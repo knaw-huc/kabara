@@ -1,8 +1,8 @@
 package nl.knaw.huc.di.kabara.rdfprocessing;
 
-import org.eclipse.rdf4j.rio.ntriples.NTriplesUtil;
-
 import java.io.IOException;
+
+import static org.eclipse.rdf4j.rio.ntriples.NTriplesUtil.escapeString;
 
 public class VirtuosoRdfProcessor implements RdfProcessor {
 
@@ -55,7 +55,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
         "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapceRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
+        "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
         "    }\n" +
         "}";
 
@@ -66,8 +66,8 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
     }
   }
 
-  private String escapceRdf(String value) {
-    return NTriplesUtil.escapeString(value);
+  private String escapeRdf(String value) {
+    return escapeString(value);
   }
 
   @Override
@@ -81,7 +81,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
           "    GRAPH " + handleUri(graph) + " {\n" +
           "            " + handleUri(subject) + "\n" +
           "            " + handleUri(predicate) + "\n" +
-          "            \"" + escapceRdf(value) + "\"@" + language + " .\n" +
+          "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
           "    }\n" +
           "}";
 
@@ -118,7 +118,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
         "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapceRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
+        "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
         "    }\n" +
         "}";
 
@@ -137,7 +137,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
         "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapceRdf(value) + "\"@" + language + " .\n" +
+        "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
         "    }\n" +
         "}";
 
