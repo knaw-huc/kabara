@@ -109,7 +109,7 @@ public class RunKabara {
         new AuthScope(target.getHostName(), target.getPort()),
         new UsernamePasswordCredentials(user, pass));
 
-    ImportManager im = new ImportManager(target, credsProvider, endpoint + "/" + path);
+    VirtuosoImportManager im = new VirtuosoImportManager(target, credsProvider, endpoint + "/" + path);
     if (!update) {
       im.createDb("CREATE GRAPH <" + base + ">;");
     }

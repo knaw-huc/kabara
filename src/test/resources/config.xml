@@ -5,7 +5,7 @@
     <!-- extend with authentication if needed -->
   </timbuctoo>
   <triplestore>
-    <endpoint>http://my_virtdb:8890</endpoint>
+    <endpoint>http://kabara_my_virtdb_1:8890</endpoint>
     <path>sparql-auth/</path>
     <!-- Virtuoso user with SPARQL Update rights -->
     <user>dba</user>
