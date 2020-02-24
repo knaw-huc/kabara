@@ -33,7 +33,6 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
   public static final Logger LOG = LoggerFactory.getLogger(VirtuosoImportManager.class);
   private final HttpHost target;
   private final Rdf4jRdfParser rdf4jRdfParser;
-  private int counter;
   private String sparqlUri;
   private CloseableHttpClient httpClient;
   private VirtuosoRdfProcessor rdfProcessor;
@@ -46,7 +45,6 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
     this.sparqlUri = endpoint;
     rdf4jRdfParser = new Rdf4jIoFactory().makeRdfParser();
     rdfProcessor = new VirtuosoRdfProcessor(sparql -> this.sendToSparQl(sparql, target, sparqlUri, httpClient));
-    counter = 0;
   }
 
   @Override
@@ -73,10 +71,8 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
     sendToSparQl(sparQlMutation, target, sparqlUri, httpClient);
   }
 
-
   private void sendToSparQl(String sparQlMutation, HttpHost target, String uri, CloseableHttpClient httpClient)
       throws IOException {
-    counter++;
     // Create AuthCache instance
     AuthCache authCache = new BasicAuthCache();
     // Generate DIGEST scheme object, initialize it and add it to the local
@@ -100,6 +96,7 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
     HttpEntity entity = builder.build();
     httppost.setEntity(entity);
 
+
     try (CloseableHttpResponse response = httpClient.execute(target, httppost, localContext)) {
       if (response.getStatusLine().getStatusCode() != 200) {
         System.err.println("----------------------------------------");
@@ -108,9 +105,6 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
         System.err.println();
         System.err.println(EntityUtils.toString(response.getEntity()));
       }
-    }
-    if (counter % 10000 == 0) {
-      LOG.info("Triples imported: {}", counter);
     }
   }
 

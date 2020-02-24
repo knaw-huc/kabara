@@ -1,17 +1,28 @@
 package nl.knaw.huc.di.kabara.rdfprocessing;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.eclipse.rdf4j.rio.ntriples.NTriplesUtil.escapeString;
 
 public class VirtuosoRdfProcessor implements RdfProcessor {
 
 
+  public static final Logger LOG = LoggerFactory.getLogger(VirtuosoRdfProcessor.class);
   private final SparqlSender spraqlSender;
+  private final List<String> deletions;
+  private final List<String> inserts;
+  private int counter;
 
   public VirtuosoRdfProcessor(SparqlSender spraqlSender) {
-
     this.spraqlSender = spraqlSender;
+    inserts = new ArrayList<>();
+    deletions = new ArrayList<>();
+    counter = 0;
   }
 
 
@@ -24,20 +35,14 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
 
-    String sparql = "INSERT DATA\n" +
-        "{\n" +
-        "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            " + handleUri(object) + " .\n" +
-        "    }\n" +
-        "}";
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            " + handleUri(object) + " .\n" +
+            "    }\n";
 
-    try {
-      spraqlSender.sendSparql(sparql);
-    } catch (IOException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+
+    handleTriple(sparql, true);
   }
 
   public String handleUri(String uri) {
@@ -50,20 +55,15 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   @Override
   public void addValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "INSERT DATA\n" +
-        "{\n" +
-        "    GRAPH " + handleUri(graph) + " {\n" +
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
         "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
-        "    }\n" +
-        "}";
+        "    }\n";
 
-    try {
-      spraqlSender.sendSparql(sparql);
-    } catch (IOException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+
+    handleTriple(sparql, false);
+
   }
 
   private String escapeRdf(String value) {
@@ -75,74 +75,89 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
       throws RdfProcessingFailedException {
 
 
-    try {
-      String sparql = "INSERT DATA\n" +
-          "{\n" +
-          "    GRAPH " + handleUri(graph) + " {\n" +
-          "            " + handleUri(subject) + "\n" +
-          "            " + handleUri(predicate) + "\n" +
-          "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
-          "    }\n" +
-          "}";
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
+        "            " + handleUri(subject) + "\n" +
+        "            " + handleUri(predicate) + "\n" +
+        "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
+        "    }\n";
 
-      spraqlSender.sendSparql(sparql);
-    } catch (IOException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    handleTriple(sparql, false);
+
   }
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "DELETE DATA\n" +
-        "{\n" +
-        "    GRAPH " + handleUri(graph) + " {\n" +
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
         "            " + handleUri(object) + " .\n" +
-        "    }\n" +
-        "}";
+        "    }\n";
 
-    try {
-      spraqlSender.sendSparql(sparql);
-    } catch (IOException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+
+    handleTriple(sparql, false);
   }
 
   @Override
   public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "DELETE DATA\n" +
-        "{\n" +
-        "    GRAPH " + handleUri(graph) + " {\n" +
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
         "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
-        "    }\n" +
-        "}";
+        "    }\n";
 
-    try {
-      spraqlSender.sendSparql(sparql);
-    } catch (IOException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+
+    handleTriple(sparql, false);
   }
 
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "DELETE DATA\n" +
-        "{\n" +
-        "    GRAPH " + handleUri(graph) + " {\n" +
+    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
         "            " + handleUri(subject) + "\n" +
         "            " + handleUri(predicate) + "\n" +
         "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
-        "    }\n" +
-        "}";
+        "    }\n";
 
+
+    handleTriple(sparql, false);
+  }
+
+  public void handleTriple(String triple, boolean isAssertion) throws RdfProcessingFailedException {
     try {
-      spraqlSender.sendSparql(sparql);
+      counter++;
+      if (isAssertion) {
+        inserts.add(triple);
+      } else {
+        deletions.add(triple);
+      }
+
+      if (counter % 500 == 0) {
+
+        StringBuilder sparql = new StringBuilder();
+        if (!inserts.isEmpty()) {
+          sparql.append("INSERT DATA\n")
+                .append("{\n")
+                .append(String.join("\n", inserts))
+                .append("}");
+        }
+        if (!deletions.isEmpty()) {
+          sparql.append("DELETE DATA\n")
+                .append("{\n")
+                .append(String.join("\n", deletions))
+                .append("}");
+        }
+        inserts.clear();
+        deletions.clear();
+        spraqlSender.sendSparql(sparql.toString());
+      }
+
+      if (counter % 10000 == 0) {
+        LOG.info("Triples processed: " + counter);
+      }
+
+
     } catch (IOException e) {
       throw new RdfProcessingFailedException(e);
     }
@@ -154,6 +169,6 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   }
 
   public interface SparqlSender {
-    void sendSparql(String sparqlMutation) throws IOException;
+    void sendSparql(String sparql) throws IOException;
   }
 }
