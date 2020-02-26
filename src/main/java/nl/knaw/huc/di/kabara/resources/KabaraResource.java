@@ -6,6 +6,7 @@ import nl.knaw.huc.di.kabara.RunKabara;
 import nl.knaw.huc.di.kabara.api.Saying;
 import nl.knaw.huc.di.kabara.api.SyncRequest;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -13,6 +14,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -24,7 +28,8 @@ public class KabaraResource {
   private final AtomicLong counter;
   private final RunKabara runKabara;
 
-  public KabaraResource(String template, String configFileName) throws SaxonApiException {
+  public KabaraResource(String template, String configFileName)
+      throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
     this.template = template;
     this.configFileName = configFileName;
     this.counter = new AtomicLong();

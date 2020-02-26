@@ -11,35 +11,6 @@
 
   <repositories>
 
-    <!-- The OCLC harvester2 artifact is in the MPI repository
-	 (because the owner of the project does not currently make it
-	 available via Maven).
-      -->
-    <repository>
-      <id>MPI</id>
-      <name>MPI LAT Repository</name>
-      <url>http://lux15.mpi.nl/nexus/content/groups/public</url>
-    </repository>
-
-    <repository>
-      <id>CLARIN</id>
-      <name>CLARIN Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>CLARIN-Snapshot</id>
-      <name>CLARIN Snapshot Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-
-
-
     <repository>
       <id>huygens</id>
       <url>http://maven.huygens.knaw.nl/repository/</url>
@@ -63,15 +34,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>nl.mpi.tla</groupId>
-      <artifactId>SaxonUtils</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
       <groupId>nl.knaw.huc</groupId>
       <artifactId>resourcesync</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.2</version>
       <type>jar</type>
     </dependency>
     <dependency>
@@ -129,6 +94,21 @@
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-rio-nquads</artifactId>
       <version>3.1.0</version>
+    </dependency>
+
+    <!-- ## Test dependencies ## -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.6.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-testing</artifactId>
+      <version>${dropwizard.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

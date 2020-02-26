@@ -13,6 +13,8 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -58,8 +60,7 @@ public class Kabara extends Application<KabaraConfiguration> {
   }
 
   @Override
-  public void run(KabaraConfiguration configuration,
-                  Environment environment) throws IOException, SaxonApiException {
+  public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
         configuration.getConfigFileName()
