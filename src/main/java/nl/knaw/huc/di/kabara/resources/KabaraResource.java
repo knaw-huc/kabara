@@ -31,13 +31,12 @@ public class KabaraResource {
   private final RunKabara runKabara;
   private final ExecutorService executor;
 
-  public KabaraResource(String template, String configFileName, ExecutorService executor)
-      throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
+  public KabaraResource(String template, String configFileName, ExecutorService executor, RunKabara runKabara) {
     this.template = template;
     this.configFileName = configFileName;
     this.executor = executor;
     this.counter = new AtomicLong();
-    runKabara = new RunKabara(configFileName);
+    this.runKabara = runKabara;
   }
 
   @GET
