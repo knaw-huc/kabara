@@ -3,29 +3,18 @@ package nl.knaw.huc.di.kabara;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import net.sf.saxon.s9api.SaxonApiException;
 import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Kabara extends Application<KabaraConfiguration> {
-
-  private static final Logger logger = LoggerFactory.getLogger(Kabara.class.getName());
-  private static ExecutorService executor = Executors.newFixedThreadPool(2);
 
   static {
     try {
