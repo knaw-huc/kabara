@@ -67,7 +67,7 @@ public class Kabara extends Application<KabaraConfiguration> {
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
         configuration.getConfigFileName(),
-        executor
+        environment.lifecycle().executorService("kabara-%d").maxThreads(20).build()
     );
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();
