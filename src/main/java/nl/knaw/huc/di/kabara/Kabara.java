@@ -53,10 +53,11 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
+    int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
         configuration.getConfigFileName(),
-        environment.lifecycle().executorService("kabara-%d").maxThreads(20).build()
+        environment.lifecycle().executorService("kabara").maxThreads(numThreads).build()
     );
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();
