@@ -87,10 +87,6 @@ public class RunKabara {
     CloseableHttpClient httpclient = HttpClients.createMinimal();
 
     VirtuosoImportManager im = new VirtuosoImportManager(tripleStore);
-    if (!update) {
-      im.createDb("CREATE GRAPH <" + base + ">;");
-    }
-
 
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
     ResourceSyncImport.ResourceSyncReport resultRsi =

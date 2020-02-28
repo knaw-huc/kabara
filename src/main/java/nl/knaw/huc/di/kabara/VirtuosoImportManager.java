@@ -8,7 +8,6 @@ import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportStatus;
 
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Optional;
@@ -43,10 +42,6 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
     }
 
     return null;
-  }
-
-  public void createDb(String sparQlMutation) throws IOException {
-    tripleStore.sendSparQlUpdate(sparQlMutation);
   }
 
   @Override
