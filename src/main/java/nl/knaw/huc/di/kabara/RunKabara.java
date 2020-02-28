@@ -56,6 +56,8 @@ public class RunKabara {
     dataSetStatusUpdater.updateStatus("Start import");
     ResourceSyncImport.ResourceSyncReport resultRsi =
         rsi.filterAndImport(dataset, null, isUpdate, "", im, lastSync, dataset, dataset);
+    dataSetStatusUpdater.updateStatus("Files imported: " + resultRsi.importedFiles);
+    dataSetStatusUpdater.updateStatus("Files ignored: " + resultRsi.ignoredFiles);
     dataSetStatusUpdater.updateStatus("Import succeeded");
 
     return resultRsi;
