@@ -9,7 +9,7 @@ template: Kabara is active
 configFileName: ./src/test/resources/config.xml
 tripleStore:
   "@class": nl.knaw.huc.di.kabara.triplestore.VirtuosoTripleStore
-  url: ${VIRTUOSO_HOST:- http://kabara_my_virtdb_1:8890}
+  url: ${VIRTUOSO_HOST:- http://localhost:8890}
   user: dba
   password: mysecret
   sparQlAuthPath: sparql-auth

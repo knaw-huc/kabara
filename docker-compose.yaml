@@ -15,3 +15,5 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    environment:
+      VIRTUOSO_HOST: "http://kabara_my_virtdb_1:8890"
