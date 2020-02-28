@@ -1,10 +1,13 @@
 package nl.knaw.huc.di.kabara;
 
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
+import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -48,16 +51,24 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void initialize(Bootstrap<KabaraConfiguration> bootstrap) {
-    // nothing to do yet
+    // Make configuration properties overridable with environment variables
+    // see: https://www.dropwizard.io/en/stable/manual/core.html#environment-variables
+    bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+        bootstrap.getConfigurationSourceProvider(),
+        new EnvironmentVariableSubstitutor(false)
+    ));
   }
 
   @Override
   public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
+    final TripleStore tripleStore = configuration.getTripleStore();
+    environment.lifecycle().manage(tripleStore);
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
     final KabaraResource resource = new KabaraResource(
         configuration.getTemplate(),
         configuration.getConfigFileName(),
-        environment.lifecycle().executorService("kabara").maxThreads(numThreads).build()
+        environment.lifecycle().executorService("kabara").maxThreads(numThreads).build(),
+        new RunKabara(configuration.getConfigFileName(), tripleStore, configuration.getResourcesyncTimeout())
     );
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();

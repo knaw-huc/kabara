@@ -1,31 +1,23 @@
 package nl.knaw.huc.di.kabara;
 
-import nl.knaw.huygens.timbuctoo.remote.rs.discover.Expedition;
-import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndex;
+
+import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.exceptions.CantRetrieveFileException;
 import nl.knaw.huygens.timbuctoo.remote.rs.exceptions.CantDetermineDataSetException;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -33,34 +25,35 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+
 
 public class RunKabara {
 
-  static Log log = LogFactory.getLog("RunKabara");
+  static Logger LOG = LoggerFactory.getLogger(RunKabara.class);
   private static String synced;
   private static String user;
   private static String pass;
   private static String endpoint;
   private static String path;
   private static String base;
-  private static int timeout = 150000; // FIXME add to configuration
-  private final String configFileName;
+  private static String configFileName;
+  private final int timeout;
+  private final TripleStore tripleStore;
 
-  public RunKabara(String configFileName)
-      throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
-    this.configFileName = configFileName;
+  public RunKabara(String configFileName, TripleStore tripleStore, int resourcesyncTimeout) throws Exception {
+    RunKabara.configFileName = configFileName;
+    this.tripleStore = tripleStore;
+    timeout = resourcesyncTimeout;
+
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document config = factory.newDocumentBuilder().parse(new File(configFileName));
     final XPath xPath = XPathFactory.newInstance().newXPath();
@@ -70,7 +63,6 @@ public class RunKabara {
     path = (String) xPath.compile("/kabara/triplestore/path").evaluate(config, XPathConstants.STRING);
     base = (String) xPath.compile("/kabara/dataset/@href").evaluate(config, XPathConstants.STRING);
     synced = (String) xPath.compile("/kabara/dataset/synced").evaluate(config, XPathConstants.STRING);
-    // timeout = parseInt((String)xPath.compile("/kabara/timbuctoo/timeout").evaluate(config, XPathConstants.STRING));
   }
 
   public ResourceSyncImport.ResourceSyncReport start(String dataset)
@@ -78,7 +70,8 @@ public class RunKabara {
       CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
       TransformerException {
 
-    log.info("dataset: " + dataset);
+    LOG.info("dataset: " + dataset);
+    LOG.info("synced on: {}", synced);
     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     df.setLenient(true);
@@ -93,17 +86,9 @@ public class RunKabara {
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
 
-    HttpHost target = HttpHost.create(endpoint);
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(
-        new AuthScope(target.getHostName(), target.getPort()),
-        new UsernamePasswordCredentials(user, pass));
+    VirtuosoImportManager im = new VirtuosoImportManager(tripleStore);
 
-    VirtuosoImportManager im = new VirtuosoImportManager(target, credsProvider, endpoint + "/" + path);
-    if (!update) {
-      im.createDb("CREATE GRAPH <" + base + ">;");
-    }
-    ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, 150000), true);
+    ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
     ResourceSyncImport.ResourceSyncReport resultRsi =
         rsi.filterAndImport(dataset, null, update, "", im, syncDate, dataset, base);
 
