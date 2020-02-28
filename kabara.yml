@@ -5,8 +5,8 @@ server:
   adminConnectors:
     - type: http
       port: 9001
-template: Kabara is active
-configFileName: ./src/test/resources/config.xml
+dataSetStatusManager:
+  path: ${DATA_PATH:- ./localData}
 tripleStore:
   "@class": nl.knaw.huc.di.kabara.triplestore.VirtuosoTripleStore
   url: ${VIRTUOSO_HOST:- http://localhost:8890}
@@ -14,3 +14,4 @@ tripleStore:
   password: mysecret
   sparQlAuthPath: sparql-auth
 resourcesyncTimeout: 15000
+publicUrl: ${PUBLIC_URL:- http://localhost:9000}

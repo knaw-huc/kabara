@@ -1,6 +1,9 @@
 package nl.knaw.huc.di.kabara;
 
 
+import nl.knaw.huc.di.kabara.status.DataSetStatus;
+import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
+import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
@@ -10,137 +13,53 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 
 public class RunKabara {
 
-  static Logger LOG = LoggerFactory.getLogger(RunKabara.class);
-  private static String synced;
-  private static String user;
-  private static String pass;
-  private static String endpoint;
-  private static String path;
-  private static String base;
-  private static String configFileName;
+  private static Logger LOG = LoggerFactory.getLogger(RunKabara.class);
   private final int timeout;
+  private final DataSetStatusManager dataSetStatusManager;
   private final TripleStore tripleStore;
 
-  public RunKabara(String configFileName, TripleStore tripleStore, int resourcesyncTimeout) throws Exception {
-    RunKabara.configFileName = configFileName;
+  public RunKabara(TripleStore tripleStore, int resourcesyncTimeout,
+                   DataSetStatusManager dataSetStatusManager) throws Exception {
     this.tripleStore = tripleStore;
     timeout = resourcesyncTimeout;
-
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    final Document config = factory.newDocumentBuilder().parse(new File(configFileName));
-    final XPath xPath = XPathFactory.newInstance().newXPath();
-    user = (String) xPath.compile("/kabara/triplestore/user").evaluate(config, XPathConstants.STRING);
-    pass = (String) xPath.compile("/kabara/triplestore/pass").evaluate(config, XPathConstants.STRING);
-    endpoint = (String) xPath.compile("/kabara/triplestore/endpoint").evaluate(config, XPathConstants.STRING);
-    path = (String) xPath.compile("/kabara/triplestore/path").evaluate(config, XPathConstants.STRING);
-    base = (String) xPath.compile("/kabara/dataset/@href").evaluate(config, XPathConstants.STRING);
-    synced = (String) xPath.compile("/kabara/dataset/synced").evaluate(config, XPathConstants.STRING);
+    this.dataSetStatusManager = dataSetStatusManager;
   }
 
   public ResourceSyncImport.ResourceSyncReport start(String dataset)
-      throws IOException, ParserConfigurationException, CantRetrieveFileException,
-      CantDetermineDataSetException, JAXBException, URISyntaxException, InterruptedException,
-      TransformerException {
+      throws IOException, CantRetrieveFileException, CantDetermineDataSetException {
 
     LOG.info("dataset: " + dataset);
-    LOG.info("synced on: {}", synced);
-    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd, YYYY HH:mm:ss z", Locale.ENGLISH);
-    DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-    df.setLenient(true);
-    Date syncDate = null;
-    boolean update = false;
-    try {
-      syncDate = sdf.parse(synced);
-      update = true;
-    } catch (ParseException pe) {
-      syncDate = new Date();
-    }
+
+    final DataSetStatus dataSetStatus = dataSetStatusManager.getStatusOrCreate(dataset);
+    final Date lastSync = dataSetStatus.getLatestSync();
+    final boolean isUpdate = dataSetStatus.isUpdate();
+    Date currentSync = new Date();
+    dataSetStatus.updateLatestSync(currentSync);
 
     CloseableHttpClient httpclient = HttpClients.createMinimal();
 
-    VirtuosoImportManager im = new VirtuosoImportManager(tripleStore);
+    final DataSetStatusUpdater dataSetStatusUpdater = update -> {
+      dataSetStatus.updateStatus(currentSync, update);
+      dataSetStatusManager.updateStatus(dataset, dataSetStatus);
+    };
+    VirtuosoImportManager im = new VirtuosoImportManager(tripleStore,
+        dataSetStatusUpdater);
 
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
+    dataSetStatusUpdater.updateStatus("Start import");
     ResourceSyncImport.ResourceSyncReport resultRsi =
-        rsi.filterAndImport(dataset, null, update, "", im, syncDate, dataset, base);
+        rsi.filterAndImport(dataset, null, isUpdate, "", im, lastSync, dataset, dataset);
+    dataSetStatusUpdater.updateStatus("Files imported: " + resultRsi.importedFiles);
+    dataSetStatusUpdater.updateStatus("Files ignored: " + resultRsi.ignoredFiles);
+    dataSetStatusUpdater.updateStatus("Import succeeded");
 
-    String newSyncDate = sdf.format(new Date());
-    makeNewConfigFile(dataset, newSyncDate);
     return resultRsi;
   }
-
-  private void makeNewConfigFile(String dataset, String syncDate)
-      throws ParserConfigurationException, TransformerException {
-    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
-    Document doc = documentBuilder.newDocument();
-    // root element
-    Element rootElement = doc.createElement("kabara");
-    doc.appendChild(rootElement);
-    Element timbuctoo = doc.createElement("timbuctoo");
-    rootElement.appendChild(timbuctoo);
-    Element resourceSync = doc.createElement("resourcesync");
-    timbuctoo.appendChild(resourceSync);
-    resourceSync.appendChild(doc.createTextNode(dataset));
-
-    Element tripleStore = doc.createElement("triplestore");
-    rootElement.appendChild(tripleStore);
-    Element endPoint = doc.createElement("endpoint");
-    tripleStore.appendChild(endPoint);
-    endPoint.appendChild(doc.createTextNode(endpoint));
-    Element userE = doc.createElement("user");
-    userE.appendChild((doc.createTextNode(user)));
-    tripleStore.appendChild(userE);
-    Element passE = doc.createElement("pass");
-    passE.appendChild((doc.createTextNode(pass)));
-    tripleStore.appendChild(passE);
-
-    Element datasetE = doc.createElement("dataset");
-    Attr attrType = doc.createAttribute("id");
-    attrType.setValue(dataset);
-    datasetE.setAttributeNode(attrType);
-    attrType = doc.createAttribute("href");
-    attrType.setValue(base);
-    datasetE.setAttributeNode(attrType);
-    rootElement.appendChild(datasetE);
-    Element syncedE = doc.createElement("synced");
-    datasetE.appendChild(syncedE);
-    syncedE.appendChild(doc.createTextNode(syncDate.toString()));
-
-    TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    Transformer transformer = null;
-    transformer = transformerFactory.newTransformer();
-    DOMSource source = new DOMSource(doc);
-    StreamResult result = new StreamResult(new File(configFileName));
-    transformer.transform(source, result);
-  }
-
 }

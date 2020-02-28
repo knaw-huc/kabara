@@ -7,6 +7,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
+import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -64,11 +65,11 @@ public class Kabara extends Application<KabaraConfiguration> {
     final TripleStore tripleStore = configuration.getTripleStore();
     environment.lifecycle().manage(tripleStore);
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
+    final DataSetStatusManager dataSetStatusManager = configuration.getDataSetStatusManager();
     final KabaraResource resource = new KabaraResource(
-        configuration.getTemplate(),
-        configuration.getConfigFileName(),
         environment.lifecycle().executorService("kabara").maxThreads(numThreads).build(),
-        new RunKabara(configuration.getConfigFileName(), tripleStore, configuration.getResourcesyncTimeout())
+        new RunKabara(tripleStore, configuration.getResourcesyncTimeout(), dataSetStatusManager),
+        dataSetStatusManager, configuration.getPublicUrl()
     );
     final KabaraHealthCheck healthCheck =
         new KabaraHealthCheck();

@@ -1,9 +1,12 @@
 package nl.knaw.huc.di.kabara.rdfprocessing;
 
+import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +17,14 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
 
   public static final Logger LOG = LoggerFactory.getLogger(VirtuosoRdfProcessor.class);
   private final SparqlSender spraqlSender;
+  private final DataSetStatusUpdater dataSetStatusUpdater;
   private final List<String> deletions;
   private final List<String> inserts;
   private int counter;
 
-  public VirtuosoRdfProcessor(SparqlSender spraqlSender) {
+  public VirtuosoRdfProcessor(SparqlSender spraqlSender, DataSetStatusUpdater dataSetStatusUpdater) {
     this.spraqlSender = spraqlSender;
+    this.dataSetStatusUpdater = dataSetStatusUpdater;
     inserts = new ArrayList<>();
     deletions = new ArrayList<>();
     counter = 0;
@@ -135,37 +140,64 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
 
       if (counter % 500 == 0) {
 
-        StringBuilder sparql = new StringBuilder();
-        if (!inserts.isEmpty()) {
-          sparql.append("INSERT DATA\n")
-                .append("{\n")
-                .append(String.join("\n", inserts))
-                .append("}");
-        }
-        if (!deletions.isEmpty()) {
-          sparql.append("DELETE DATA\n")
-                .append("{\n")
-                .append(String.join("\n", deletions))
-                .append("}");
-        }
-        inserts.clear();
-        deletions.clear();
-        spraqlSender.sendSparql(sparql.toString());
+        sendSparql();
       }
 
       if (counter % 10000 == 0) {
-        LOG.info("Triples processed: " + counter);
+        updateStatus("Triples processed: " + counter);
       }
 
-
     } catch (IOException e) {
+      updateException(e);
       throw new RdfProcessingFailedException(e);
     }
   }
 
+  private void updateException(Exception exception) throws RdfProcessingFailedException {
+    updateStatus(exception.getMessage());
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+    exception.printStackTrace(printWriter);
+    updateStatus(stringWriter.toString());
+  }
+
+  private void updateStatus(String statusUpdate) throws RdfProcessingFailedException {
+    try {
+      dataSetStatusUpdater.updateStatus(statusUpdate);
+    } catch (IOException e) {
+      throw new RdfProcessingFailedException(e);
+    }
+    LOG.info(statusUpdate);
+  }
+
+  public void sendSparql() throws IOException {
+    StringBuilder sparql = new StringBuilder();
+    if (!inserts.isEmpty()) {
+      sparql.append("INSERT DATA\n")
+            .append("{\n")
+            .append(String.join("\n", inserts))
+            .append("}");
+    }
+    if (!deletions.isEmpty()) {
+      sparql.append("DELETE DATA\n")
+            .append("{\n")
+            .append(String.join("\n", deletions))
+            .append("}");
+    }
+    inserts.clear();
+    deletions.clear();
+    spraqlSender.sendSparql(sparql.toString());
+  }
+
   @Override
   public void commit() throws RdfProcessingFailedException {
-    // nothing to do
+    updateStatus("Triples processed: " + counter);
+    try {
+      sendSparql();
+    } catch (IOException e) {
+      throw new RdfProcessingFailedException(e);
+    }
   }
 
   public interface SparqlSender {
