@@ -32,12 +32,37 @@ Go to your Timbuctoo instance Resourcesync: http(s)://<timbuctoo-host>/.well-kno
 
 Choose a data set and execute the following command:
 ----
-curl -X POST -d '{ "dataSet": "http(s)://<timbuctoo-host>/v5/resourcesync/<userId>/<dataset>/capabilitylist.xml" }' -H 'content-type: application/json' http://<kabara-host>/kabara
+curl -v -X POST -d '{ "dataSet": "http(s)://<timbuctoo-host>/v5/resourcesync/<userId>/<dataset>/capabilitylist.xml" }' -H 'content-type: application/json' http://<kabara-host>/kabara
 ----
 
 * `kabara-host` is localhost:9000 if you are running Kabara locally.
 * `timbuctoo-host`: see https://github.com/HuygensING/timbuctoo.git on how to start Timbuctoo and how to create and publish a data set.
 * The complete data set url will be found in http(s)://<timbuctoo-host>/.well-known/resourcesync
+
+The previous request will yield something like:
+----
+Note: Unnecessary use of -X or --request, POST is already inferred.
+*   Trying ::1...
+* TCP_NODELAY set
+* Connected to localhost (::1) port 9000 (#0)
+> POST /kabara HTTP/1.1
+> Host: localhost:9000
+> User-Agent: curl/7.58.0
+> Accept: */*
+> content-type: application/json
+> Content-Length: 147
+>
+* upload completely sent off: 147 out of 147 bytes
+< HTTP/1.1 201 Created
+< Date: Fri, 28 Feb 2020 11:37:46 GMT
+< Location: http://localhost:9000/kabara/status/https%3A%2F%2Frepository.goldenagents.org%2Fv5%2Fresourcesync%2Fufab7d657a250e3461361c982ce9b38f3816e0c4b%2Fecartico_20190805%2Fcapabilitylist.xml
+< Content-Length: 0
+<
+* Connection #0 to host localhost left intact
+
+----
+
+To follow the progress of the synchronization open the value of `Location` (`http://localhost/`...) in your browser and refresh for retrieving updates.
 
 The data synchronization may take a while, please be patient.
 
