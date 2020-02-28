@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.net.URLEncoder.encode;
+import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 
 
@@ -71,7 +72,7 @@ public class KabaraResource {
 
 
     try {
-      return Response.created(fromUri(publicUrl).path("status").path(encode(dataSet, "UTF-8")).build()).build();
+      return created(fromUri(publicUrl).path("kabara").path("status").path(encode(dataSet, "UTF-8")).build()).build();
     } catch (UnsupportedEncodingException e) {
       LOG.error("Failed to create status link.", e);
       return Response.serverError().build();
