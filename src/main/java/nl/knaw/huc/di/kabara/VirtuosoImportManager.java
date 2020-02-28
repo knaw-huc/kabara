@@ -4,6 +4,7 @@ import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessingFailedException;
 import nl.knaw.huc.di.kabara.rdfprocessing.VirtuosoRdfProcessor;
 import nl.knaw.huc.di.kabara.rdfprocessing.rdf4j.Rdf4jIoFactory;
 import nl.knaw.huc.di.kabara.rdfprocessing.rdf4j.Rdf4jRdfParser;
+import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportStatus;
 
@@ -18,10 +19,10 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
   private final TripleStore tripleStore;
   private VirtuosoRdfProcessor rdfProcessor;
 
-  public VirtuosoImportManager(TripleStore tripleStore) {
+  public VirtuosoImportManager(TripleStore tripleStore, DataSetStatusUpdater statusUpdater) {
     rdf4jRdfParser = new Rdf4jIoFactory().makeRdfParser();
     this.tripleStore = tripleStore;
-    rdfProcessor = new VirtuosoRdfProcessor(this.tripleStore::sendSparQlUpdate);
+    rdfProcessor = new VirtuosoRdfProcessor(this.tripleStore::sendSparQlUpdate, statusUpdater);
   }
 
   @Override

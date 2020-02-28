@@ -2,18 +2,16 @@ package nl.knaw.huc.di.kabara;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 public class KabaraConfiguration extends Configuration {
 
-  @NotEmpty
-  private String template;
-  @NotEmpty
-  private String configFileName;
+  @JsonProperty
+  @NotNull
+  private DataSetStatusManager dataSetStatusManager;
   @JsonProperty
   @NotNull
   private TripleStore tripleStore;
@@ -22,27 +20,9 @@ public class KabaraConfiguration extends Configuration {
   @NotNull
   private int resourcesyncTimeout;
 
-
   @JsonProperty
-  public String getTemplate() {
-    return template;
-  }
-
-  @JsonProperty
-  public void setTemplate(String template) {
-    this.template = template;
-  }
-
-  @JsonProperty
-  public void setConfigFileName(String configFileName) {
-    this.configFileName = configFileName;
-  }
-
-  @JsonProperty
-  public String getConfigFileName() {
-    return configFileName;
-  }
-
+  @NotNull
+  private String publicUrl;
 
   public TripleStore getTripleStore() {
     return tripleStore;
@@ -50,5 +30,13 @@ public class KabaraConfiguration extends Configuration {
 
   public int getResourcesyncTimeout() {
     return resourcesyncTimeout;
+  }
+
+  public DataSetStatusManager getDataSetStatusManager() {
+    return dataSetStatusManager;
+  }
+
+  public String getPublicUrl() {
+    return this.publicUrl;
   }
 }

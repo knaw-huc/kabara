@@ -17,3 +17,5 @@ services:
       - "9001:9001"
     environment:
       VIRTUOSO_HOST: "http://kabara_my_virtdb_1:8890"
+      DATA_PATH: ./data
+      PUBLIC_URL: http://localhost:9000
