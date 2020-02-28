@@ -46,12 +46,13 @@ public class RunKabara {
   private static String path;
   private static String base;
   private static String configFileName;
-  private static int timeout = 150000; // FIXME add to configuration
+  private final int timeout;
   private final TripleStore tripleStore;
 
-  public RunKabara(String configFileName, TripleStore tripleStore) throws Exception {
+  public RunKabara(String configFileName, TripleStore tripleStore, int resourcesyncTimeout) throws Exception {
     RunKabara.configFileName = configFileName;
     this.tripleStore = tripleStore;
+    timeout = resourcesyncTimeout;
 
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document config = factory.newDocumentBuilder().parse(new File(configFileName));
@@ -62,7 +63,6 @@ public class RunKabara {
     path = (String) xPath.compile("/kabara/triplestore/path").evaluate(config, XPathConstants.STRING);
     base = (String) xPath.compile("/kabara/dataset/@href").evaluate(config, XPathConstants.STRING);
     synced = (String) xPath.compile("/kabara/dataset/synced").evaluate(config, XPathConstants.STRING);
-    // timeout = parseInt((String)xPath.compile("/kabara/timbuctoo/timeout").evaluate(config, XPathConstants.STRING));
   }
 
   public ResourceSyncImport.ResourceSyncReport start(String dataset)

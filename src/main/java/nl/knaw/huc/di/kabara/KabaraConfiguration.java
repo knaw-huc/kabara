@@ -6,6 +6,7 @@ import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 public class KabaraConfiguration extends Configuration {
 
@@ -16,6 +17,11 @@ public class KabaraConfiguration extends Configuration {
   @JsonProperty
   @NotNull
   private TripleStore tripleStore;
+
+  @JsonProperty
+  @NotNull
+  private int resourcesyncTimeout;
+
 
   @JsonProperty
   public String getTemplate() {
@@ -40,5 +46,9 @@ public class KabaraConfiguration extends Configuration {
 
   public TripleStore getTripleStore() {
     return tripleStore;
+  }
+
+  public int getResourcesyncTimeout() {
+    return resourcesyncTimeout;
   }
 }

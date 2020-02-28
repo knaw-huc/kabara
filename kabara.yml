@@ -13,3 +13,4 @@ tripleStore:
   user: dba
   password: mysecret
   sparQlAuthPath: sparql-auth
+resourcesyncTimeout: 15000
