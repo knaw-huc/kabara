@@ -62,7 +62,7 @@ Note: Unnecessary use of -X or --request, POST is already inferred.
 
 ----
 
-To follow the progress of the synchronization open the value of `Location` (`http://localhost/`...) in your browser and refresh for retrieving updates.
+To follow the progress of the synchronization open the value of `Location` (`http://localhost:9000/`...) in your browser and refresh for retrieving updates.
 
 The data synchronization may take a while, please be patient.
 
