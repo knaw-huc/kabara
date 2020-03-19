@@ -139,7 +139,6 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
       }
 
       if (counter % 500 == 0) {
-
         sendSparql();
       }
 

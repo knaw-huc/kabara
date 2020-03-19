@@ -14,6 +14,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.net.URI;
 // Class is used via reflection
 public class VirtuosoTripleStore implements TripleStore {
 
+  private static final Logger LOG = LoggerFactory.getLogger(VirtuosoTripleStore.class);
   private final String url;
   private final String user;
   private final String password;
@@ -55,11 +58,12 @@ public class VirtuosoTripleStore implements TripleStore {
 
     try (CloseableHttpResponse response = httpClient.execute(httppost)) {
       if (response.getStatusLine().getStatusCode() != 200) {
-        System.err.println("----------------------------------------");
-        System.err.println("target: " + sparqlEndPoint);
-        System.err.println("" + response.getStatusLine());
-        System.err.println();
-        System.err.println(EntityUtils.toString(response.getEntity()));
+        LOG.error(
+            "target: {}\nstatus: {}\nmessage: {}",
+            sparqlEndPoint,
+            response.getStatusLine(),
+            EntityUtils.toString(response.getEntity())
+        );
       }
     }
   }
