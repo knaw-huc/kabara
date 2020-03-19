@@ -40,6 +40,11 @@ public class NquadUdRdfHandler extends AbstractRDFHandler {
 
   @Override
   public void endRDF() throws RDFHandlerException {
+    try {
+      rdfProcessor.commit();
+    } catch (RdfProcessingFailedException e) {
+      throw new RDFHandlerException(e);
+    }
   }
 
   @Override
