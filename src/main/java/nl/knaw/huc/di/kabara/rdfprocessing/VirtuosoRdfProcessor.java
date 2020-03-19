@@ -67,7 +67,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
         "    }\n";
 
 
-    handleTriple(sparql, false);
+    handleTriple(sparql, true);
 
   }
 
@@ -86,7 +86,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
         "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
         "    }\n";
 
-    handleTriple(sparql, false);
+    handleTriple(sparql, true);
 
   }
 
