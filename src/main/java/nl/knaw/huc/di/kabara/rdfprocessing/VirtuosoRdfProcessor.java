@@ -155,6 +155,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
 
   private void updateException(Exception exception) throws RdfProcessingFailedException {
     updateStatus(exception.getMessage());
+    LOG.error("Exception during process", exception);
 
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -164,11 +165,11 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
 
   private void updateStatus(String statusUpdate) throws RdfProcessingFailedException {
     try {
+      LOG.info(statusUpdate);
       dataSetStatusUpdater.updateStatus(statusUpdate);
     } catch (IOException e) {
       throw new RdfProcessingFailedException(e);
     }
-    LOG.info(statusUpdate);
   }
 
   public void sendSparql() throws IOException {
@@ -196,6 +197,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
     try {
       sendSparql();
     } catch (IOException e) {
+      updateException(e);
       throw new RdfProcessingFailedException(e);
     }
   }
