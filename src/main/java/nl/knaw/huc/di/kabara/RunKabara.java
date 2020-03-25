@@ -33,7 +33,7 @@ public class RunKabara {
   }
 
   public ResourceSyncImport.ResourceSyncReport start(String dataset)
-      throws IOException, CantRetrieveFileException, CantDetermineDataSetException {
+      throws IOException {
 
     LOG.info("dataset: " + dataset);
 
@@ -55,7 +55,16 @@ public class RunKabara {
     ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(httpclient, timeout), true);
     dataSetStatusUpdater.updateStatus("Start import");
     ResourceSyncImport.ResourceSyncReport resultRsi =
-        rsi.filterAndImport(dataset, null, isUpdate, "", im, lastSync, dataset, dataset);
+        null;
+    try {
+      resultRsi = rsi.filterAndImport(dataset, null, isUpdate, "", im, lastSync, dataset, dataset);
+    } catch (CantRetrieveFileException e) {
+      // inform user
+      e.printStackTrace();
+    } catch (CantDetermineDataSetException e) {
+      // inform user
+      e.printStackTrace();
+    }
     dataSetStatusUpdater.updateStatus("Files imported: " + resultRsi.importedFiles);
     dataSetStatusUpdater.updateStatus("Files ignored: " + resultRsi.ignoredFiles);
     dataSetStatusUpdater.updateStatus("Import succeeded");
