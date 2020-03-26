@@ -60,9 +60,11 @@ public class RunKabara {
       resultRsi = rsi.filterAndImport(dataset, null, isUpdate, "", im, lastSync, dataset, dataset);
     } catch (CantRetrieveFileException e) {
       // inform user
+      dataSetStatusUpdater.updateStatus(String.format("cant't retrieve file from dataset: %s", dataset));
       e.printStackTrace();
     } catch (CantDetermineDataSetException e) {
       // inform user
+      dataSetStatusUpdater.updateStatus(String.format("cant't determine dataset: %s", dataset));
       e.printStackTrace();
     }
     dataSetStatusUpdater.updateStatus("Files imported: " + resultRsi.importedFiles);
