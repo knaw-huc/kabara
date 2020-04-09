@@ -57,6 +57,8 @@ public class KabaraResource {
   public Response syncDataSet(SyncRequest request) {
     final String dataSet = request.getDataSet();
     LOG.info("dataset, {}", dataSet);
+    final String tripleStore = request.getTripleStore();
+    LOG.info("tripleStore, {}", tripleStore);
     Callable<String> callableTask = new Callable<String>() {
       @Override
       public String call() throws Exception {
