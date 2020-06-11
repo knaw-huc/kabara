@@ -26,15 +26,12 @@ public class VirtuosoImportManager implements ImportManager {
 
   @Override
   public boolean isRdfTypeSupported(MediaType mediaType) {
-    System.out.println(mediaType + " is Rdf Type Supported");
     return true;
   }
 
   @Override
-  public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName,
-                                     InputStream rdfInputStream,
+  public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
                                      Optional<Charset> charset, MediaType mediaType) {
-
     try {
       rdf4jRdfParser.importRdf(rdfInputStream, baseUri, defaultGraph, rdfProcessor, mediaType);
     } catch (RdfProcessingFailedException e) {
@@ -46,6 +43,5 @@ public class VirtuosoImportManager implements ImportManager {
 
   @Override
   public void addFile(InputStream inputStream, String fileName, MediaType mediaType) {
-    System.out.println("addFile (does nothing!");
   }
 }

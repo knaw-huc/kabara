@@ -57,15 +57,8 @@ public class KabaraResource {
   public Response syncDataSet(SyncRequest request) {
     final String dataSet = request.getDataSet();
     LOG.info("dataset, {}", dataSet);
-    Callable<String> callableTask = () -> {
-      try {
-        runKabara.start(dataSet);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      return "ok";
-    };
-    executor.submit(callableTask);
+
+    executor.submit(() -> runKabara.start(dataSet));
 
     try {
       return created(fromUri(publicUrl).path("kabara").path("status").path(encode(dataSet, "UTF-8")).build()).build();

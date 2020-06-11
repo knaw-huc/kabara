@@ -43,9 +43,7 @@ public class DataSetStatusManager {
       final File dataSetStatusFile = path.resolve(URLEncoder.encode(dataSetUri, "UTF-8")).toFile();
       if (dataSetStatusFile.exists()) {
         synchronized (path) {
-          final DataSetStatus dataSetStatus = OBJECT_MAPPER.readValue(dataSetStatusFile, DataSetStatus.class);
-
-          return dataSetStatus;
+          return OBJECT_MAPPER.readValue(dataSetStatusFile, DataSetStatus.class);
         }
       } else {
         final DataSetStatus newDataSetStatus = DataSetStatus.createNewDataSetStatus();

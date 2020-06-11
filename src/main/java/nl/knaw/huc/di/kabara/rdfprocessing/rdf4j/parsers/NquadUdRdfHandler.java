@@ -54,6 +54,7 @@ public class NquadUdRdfHandler extends AbstractRDFHandler {
         rdfProcessor.commit();
         throw new RDFHandlerException("Interrupted");
       }
+
       String graph = st.getContext() == null ? defaultGraph : st.getContext().stringValue();
       rdfProcessor.onQuad(
           isAssertion(),

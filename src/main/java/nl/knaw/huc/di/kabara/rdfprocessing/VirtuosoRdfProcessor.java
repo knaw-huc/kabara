@@ -19,6 +19,7 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   private final DataSetStatusUpdater dataSetStatusUpdater;
   private final List<String> deletions;
   private final List<String> inserts;
+
   private int counter;
 
   public VirtuosoRdfProcessor(SparqlSender spraqlSender, DataSetStatusUpdater dataSetStatusUpdater) {
@@ -29,22 +30,20 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
     counter = 0;
   }
 
-
   @Override
-  public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
+  public void setPrefix(String prefix, String iri) {
     // Nothing to do
   }
 
   @Override
   public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            " + handleUri(object) + " .\n" +
-        "    }\n";
-
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            " + handleUri(object) + " .\n" +
+            "    }\n";
 
     handleTriple(sparql, true);
   }
@@ -59,15 +58,15 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   @Override
   public void addValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
-        "    }\n";
-
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") +
+            " .\n" +
+            "    }\n";
 
     handleTriple(sparql, true);
-
   }
 
   private String escapeRdf(String value) {
@@ -77,27 +76,25 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   @Override
   public void addLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
       throws RdfProcessingFailedException {
-
-
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
-        "    }\n";
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
+            "    }\n";
 
     handleTriple(sparql, true);
-
   }
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            " + handleUri(object) + " .\n" +
-        "    }\n";
-
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            " + handleUri(object) + " .\n" +
+            "    }\n";
 
     handleTriple(sparql, false);
   }
@@ -105,12 +102,13 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   @Override
   public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") + " .\n" +
-        "    }\n";
-
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            \"" + escapeRdf(value) + "\"" + (valueType != null ? "^^" + handleUri(valueType) : "") +
+            " .\n" +
+            "    }\n";
 
     handleTriple(sparql, false);
   }
@@ -118,12 +116,12 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
       throws RdfProcessingFailedException {
-    String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-        "            " + handleUri(subject) + "\n" +
-        "            " + handleUri(predicate) + "\n" +
-        "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
-        "    }\n";
-
+    String sparql =
+        "    GRAPH " + handleUri(graph) + " {\n" +
+            "            " + handleUri(subject) + "\n" +
+            "            " + handleUri(predicate) + "\n" +
+            "            \"" + escapeRdf(value) + "\"@" + language + " .\n" +
+            "    }\n";
 
     handleTriple(sparql, false);
   }

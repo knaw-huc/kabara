@@ -24,8 +24,6 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void initialize(Bootstrap<KabaraConfiguration> bootstrap) {
-    // Make configuration properties overridable with environment variables
-    // see: https://www.dropwizard.io/en/stable/manual/core.html#environment-variables
     bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
         bootstrap.getConfigurationSourceProvider(),
         new EnvironmentVariableSubstitutor(false)
@@ -33,7 +31,7 @@ public class Kabara extends Application<KabaraConfiguration> {
   }
 
   @Override
-  public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
+  public void run(KabaraConfiguration configuration, Environment environment) {
     final TripleStore tripleStore = configuration.getTripleStore();
     environment.lifecycle().manage(tripleStore);
 

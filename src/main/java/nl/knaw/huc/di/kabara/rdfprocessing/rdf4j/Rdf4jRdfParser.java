@@ -14,20 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Rdf4jRdfParser {
-
-  public void importRdf(
-      InputStream input,
-      String baseUri,
-      String defaultGraph,
-      RdfProcessor rdfProcessor,
-      MediaType mimeType
-  ) throws RdfProcessingFailedException {
-
+  public void importRdf(InputStream input, String baseUri, String defaultGraph,
+                        RdfProcessor rdfProcessor, MediaType mimeType) throws RdfProcessingFailedException {
     try {
-      RDFFormat format = Rio.getParserFormatForMIMEType(mimeType.toString())
-                            .orElseThrow(
-          () -> new UnsupportedRDFormatException(mimeType + " is not a supported rdf type.")
-        );
+      RDFFormat format = Rio.getParserFormatForMIMEType(mimeType.toString()).orElseThrow(
+        () -> new UnsupportedRDFormatException(mimeType + " is not a supported rdf type.")
+      );
       RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
       rdfParser.setRDFHandler(new NquadUdRdfHandler(rdfProcessor, defaultGraph));
