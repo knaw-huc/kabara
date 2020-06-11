@@ -10,37 +10,9 @@ import nl.knaw.huc.di.kabara.resources.KabaraResource;
 import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
+import java.util.concurrent.ExecutorService;
 
 public class Kabara extends Application<KabaraConfiguration> {
-
-  static {
-    try {
-      SSLContext sc = SSLContext.getInstance("TLS");
-      sc.init(null, new TrustManager[]{new X509TrustManager() {
-        public X509Certificate[] getAcceptedIssuers() {
-          return null;
-        }
-
-        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-        }
-
-        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-        }
-      }
-      }, null);
-      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    } catch (NoSuchAlgorithmException | KeyManagementException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static void main(String[] args) throws Exception {
     new Kabara().run(args);
   }
@@ -64,18 +36,20 @@ public class Kabara extends Application<KabaraConfiguration> {
   public void run(KabaraConfiguration configuration, Environment environment) throws Exception {
     final TripleStore tripleStore = configuration.getTripleStore();
     environment.lifecycle().manage(tripleStore);
-    int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
-    final DataSetStatusManager dataSetStatusManager = configuration.getDataSetStatusManager();
-    final KabaraResource resource = new KabaraResource(
-        environment.lifecycle().executorService("kabara").maxThreads(numThreads).build(),
-        new RunKabara(tripleStore, configuration.getResourcesyncTimeout(), dataSetStatusManager),
-        dataSetStatusManager, configuration.getPublicUrl()
-    );
-    final KabaraHealthCheck healthCheck =
-        new KabaraHealthCheck();
+
+    final int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
+    final ExecutorService kabaraExecutorService =
+        environment.lifecycle().executorService("kabara").maxThreads(numThreads).build();
+
+    final KabaraHealthCheck healthCheck = new KabaraHealthCheck();
     environment.healthChecks().register("template", healthCheck);
-    // virtuoso afhankelijkheid !!!
+
+    final DataSetStatusManager dataSetStatusManager = configuration.getDataSetStatusManager();
+    final RunKabara runKabara =
+        new RunKabara(tripleStore, configuration.getResourcesyncTimeout(), dataSetStatusManager);
+
+    final KabaraResource resource = new KabaraResource(
+        kabaraExecutorService, runKabara, dataSetStatusManager, configuration.getPublicUrl());
     environment.jersey().register(resource);
   }
-
 }

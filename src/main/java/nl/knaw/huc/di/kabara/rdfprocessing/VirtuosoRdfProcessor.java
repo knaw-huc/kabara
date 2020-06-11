@@ -13,9 +13,8 @@ import java.util.List;
 import static org.eclipse.rdf4j.rio.ntriples.NTriplesUtil.escapeString;
 
 public class VirtuosoRdfProcessor implements RdfProcessor {
-
-
   public static final Logger LOG = LoggerFactory.getLogger(VirtuosoRdfProcessor.class);
+
   private final SparqlSender spraqlSender;
   private final DataSetStatusUpdater dataSetStatusUpdater;
   private final List<String> deletions;
@@ -41,10 +40,10 @@ public class VirtuosoRdfProcessor implements RdfProcessor {
       throws RdfProcessingFailedException {
 
     String sparql = "    GRAPH " + handleUri(graph) + " {\n" +
-            "            " + handleUri(subject) + "\n" +
-            "            " + handleUri(predicate) + "\n" +
-            "            " + handleUri(object) + " .\n" +
-            "    }\n";
+        "            " + handleUri(subject) + "\n" +
+        "            " + handleUri(predicate) + "\n" +
+        "            " + handleUri(object) + " .\n" +
+        "    }\n";
 
 
     handleTriple(sparql, true);

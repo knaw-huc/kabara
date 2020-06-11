@@ -1,7 +1,6 @@
 package nl.knaw.huc.di.kabara.rdfprocessing;
 
 public interface RdfProcessor {
-
   String LANGSTRING = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString";
 
   void setPrefix(String prefix, String iri) throws RdfProcessingFailedException;
@@ -54,6 +53,4 @@ public interface RdfProcessor {
   }
 
   void commit() throws RdfProcessingFailedException;
-
-
 }

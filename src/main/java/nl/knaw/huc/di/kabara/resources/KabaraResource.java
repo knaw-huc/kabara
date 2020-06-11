@@ -57,19 +57,15 @@ public class KabaraResource {
   public Response syncDataSet(SyncRequest request) {
     final String dataSet = request.getDataSet();
     LOG.info("dataset, {}", dataSet);
-    Callable<String> callableTask = new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        try {
-          runKabara.start(dataSet);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        return "ok";
+    Callable<String> callableTask = () -> {
+      try {
+        runKabara.start(dataSet);
+      } catch (Exception e) {
+        e.printStackTrace();
       }
+      return "ok";
     };
     executor.submit(callableTask);
-
 
     try {
       return created(fromUri(publicUrl).path("kabara").path("status").path(encode(dataSet, "UTF-8")).build()).build();
@@ -83,7 +79,6 @@ public class KabaraResource {
   @Path("status/{dataSet}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getProcessStatus(@PathParam("dataSet") String dataSetUri) {
-
     try {
       final Optional<DataSetStatus> status = dataSetStatusManager.getStatus(dataSetUri);
       if (status.isPresent()) {

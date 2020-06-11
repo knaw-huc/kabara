@@ -28,7 +28,7 @@ public class NquadsUdParser extends NQuadsParser {
     NO_NAMESPACES,
     SUPPORTS_CONTEXTS
   );
-  private Stack<Integer> actions;
+  private final Stack<Integer> actions;
 
   public NquadsUdParser() {
     actions = new Stack<>();
@@ -142,7 +142,7 @@ public class NquadsUdParser extends NQuadsParser {
   public RDFParser setRDFHandler(RDFHandler handler) {
     if (handler instanceof NquadUdRdfHandler) {
       // It might be nicer to override statement, to make it contain the action, but it takes to much effort for now.
-      ((NquadUdRdfHandler) handler).registerActionSupplier(() -> actions.pop());
+      ((NquadUdRdfHandler) handler).registerActionSupplier(actions::pop);
     }
     return super.setRDFHandler(handler);
   }

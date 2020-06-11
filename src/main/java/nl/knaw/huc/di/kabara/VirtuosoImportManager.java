@@ -7,6 +7,7 @@ import nl.knaw.huc.di.kabara.rdfprocessing.rdf4j.Rdf4jRdfParser;
 import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportStatus;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportManager;
 
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
@@ -14,15 +15,13 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.rs.download.ImportManager {
+public class VirtuosoImportManager implements ImportManager {
   private final Rdf4jRdfParser rdf4jRdfParser;
-  private final TripleStore tripleStore;
-  private VirtuosoRdfProcessor rdfProcessor;
+  private final VirtuosoRdfProcessor rdfProcessor;
 
   public VirtuosoImportManager(TripleStore tripleStore, DataSetStatusUpdater statusUpdater) {
     rdf4jRdfParser = new Rdf4jIoFactory().makeRdfParser();
-    this.tripleStore = tripleStore;
-    rdfProcessor = new VirtuosoRdfProcessor(this.tripleStore::sendSparQlUpdate, statusUpdater);
+    rdfProcessor = new VirtuosoRdfProcessor(tripleStore::sendSparQlUpdate, statusUpdater);
   }
 
   @Override
@@ -49,5 +48,4 @@ public class VirtuosoImportManager implements nl.knaw.huygens.timbuctoo.remote.r
   public void addFile(InputStream inputStream, String fileName, MediaType mediaType) {
     System.out.println("addFile (does nothing!");
   }
-
 }

@@ -4,18 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.NoHttpResponseException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +21,14 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 
-// Class is used via reflection
 public class VirtuosoTripleStore implements TripleStore {
-
   private static final Logger LOG = LoggerFactory.getLogger(VirtuosoTripleStore.class);
+
   private final String url;
   private final String user;
   private final String password;
   private final String sparQlAuthPath;
+
   private CloseableHttpClient httpClient;
   private URI sparqlEndPoint;
 
@@ -40,8 +37,7 @@ public class VirtuosoTripleStore implements TripleStore {
       @JsonProperty("url") String url,
       @JsonProperty("user") String user,
       @JsonProperty("password") String password,
-      @JsonProperty("sparQlAuthPath") String sparQlAuthPath
-  ) {
+      @JsonProperty("sparQlAuthPath") String sparQlAuthPath) {
     this.url = url;
     this.user = user;
     this.password = password;
@@ -55,9 +51,9 @@ public class VirtuosoTripleStore implements TripleStore {
     MultipartEntityBuilder builder = MultipartEntityBuilder.create();
     builder.addTextBody("format", "application/sparql-results+xml");
     builder.addTextBody("query", sparQl);
+
     HttpEntity entity = builder.build();
     httppost.setEntity(entity);
-
 
     try (CloseableHttpResponse response = httpClient.execute(httppost)) {
       if (response.getStatusLine().getStatusCode() != 200) {
@@ -72,36 +68,35 @@ public class VirtuosoTripleStore implements TripleStore {
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     sparqlEndPoint = UriBuilder.fromUri(url).path(sparQlAuthPath).build();
-
     HttpHost target = HttpHost.create(url);
+
     CredentialsProvider credsProvider = new BasicCredentialsProvider();
     credsProvider.setCredentials(
         new AuthScope(target.getHostName(), target.getPort()),
-        new UsernamePasswordCredentials(user, password));
+        new UsernamePasswordCredentials(user, password)
+    );
 
-    HttpRequestRetryHandler httpRequestRetryHandler = new HttpRequestRetryHandler() {
-      @Override
-      public boolean retryRequest(IOException exception, int executionCount,
-                                  HttpContext context) {
-        if (executionCount > 3) {
-          LOG.warn("Maximum tries reached for client http pool ");
-          return false;
-        }
-        if (exception instanceof NoHttpResponseException) {
-          LOG.warn("No response from server on " + executionCount + " call");
+    httpClient = HttpClients
+        .custom()
+        .setDefaultCredentialsProvider(credsProvider)
+        .setRetryHandler((exception, executionCount, context) -> {
+          if (executionCount > 3) {
+            LOG.warn("Maximum number of tries reached for Virtuoso sync");
+            return false;
+          }
+
+          LOG.warn("No response from Virtuoso on try " + executionCount);
+          try {
+            Thread.sleep(30000 * executionCount); // Half a minute * execution count
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+
           return true;
-        }
-        return false;
-      }
-    };
-
-    httpClient = HttpClients.custom()
-                            .setDefaultCredentialsProvider(credsProvider)
-                            .setRetryHandler(httpRequestRetryHandler)
-                            .build();
-
+        })
+        .build();
   }
 
   @Override
