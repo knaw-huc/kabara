@@ -4,15 +4,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,9 +81,27 @@ public class VirtuosoTripleStore implements TripleStore {
         new AuthScope(target.getHostName(), target.getPort()),
         new UsernamePasswordCredentials(user, password));
 
+    HttpRequestRetryHandler httpRequestRetryHandler = new HttpRequestRetryHandler() {
+      @Override
+      public boolean retryRequest(IOException exception, int executionCount,
+                                  HttpContext context) {
+        if (executionCount > 3) {
+          LOG.warn("Maximum tries reached for client http pool ");
+          return false;
+        }
+        if (exception instanceof NoHttpResponseException) {
+          LOG.warn("No response from server on " + executionCount + " call");
+          return true;
+        }
+        return false;
+      }
+    };
+
     httpClient = HttpClients.custom()
                             .setDefaultCredentialsProvider(credsProvider)
+                            .setRetryHandler(httpRequestRetryHandler)
                             .build();
+
   }
 
   @Override
