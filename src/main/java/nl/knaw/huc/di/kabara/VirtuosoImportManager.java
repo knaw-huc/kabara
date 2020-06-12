@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -45,10 +46,13 @@ public class VirtuosoImportManager implements ImportManager {
         file.delete();
       }
 
-      IOUtils.copy(rdfInputStream, new GZIPOutputStream(new FileOutputStream(file)));
-      InputStream is = new GZIPInputStream(new FileInputStream(file));
+      try (OutputStream out = new GZIPOutputStream(new FileOutputStream(file))) {
+        IOUtils.copy(rdfInputStream, out);
+      }
 
-      rdf4jRdfParser.importRdf(is, baseUri, defaultGraph, rdfProcessor, mediaType);
+      try (InputStream in = new GZIPInputStream(new FileInputStream(file))) {
+        rdf4jRdfParser.importRdf(in, baseUri, defaultGraph, rdfProcessor, mediaType);
+      }
 
       file.delete();
     } catch (RdfProcessingFailedException | IOException e) {
