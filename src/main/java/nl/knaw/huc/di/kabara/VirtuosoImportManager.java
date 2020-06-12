@@ -8,12 +8,19 @@ import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportStatus;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ImportManager;
+import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.MediaType;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class VirtuosoImportManager implements ImportManager {
   private final Rdf4jRdfParser rdf4jRdfParser;
@@ -33,8 +40,18 @@ public class VirtuosoImportManager implements ImportManager {
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
                                      Optional<Charset> charset, MediaType mediaType) {
     try {
-      rdf4jRdfParser.importRdf(rdfInputStream, baseUri, defaultGraph, rdfProcessor, mediaType);
-    } catch (RdfProcessingFailedException e) {
+      File file = new File("./tmp.gz");
+      if (file.exists()) {
+        file.delete();
+      }
+
+      IOUtils.copy(rdfInputStream, new GZIPOutputStream(new FileOutputStream(file)));
+      InputStream is = new GZIPInputStream(new FileInputStream(file));
+
+      rdf4jRdfParser.importRdf(is, baseUri, defaultGraph, rdfProcessor, mediaType);
+
+      file.delete();
+    } catch (RdfProcessingFailedException | IOException e) {
       e.printStackTrace();
     }
 

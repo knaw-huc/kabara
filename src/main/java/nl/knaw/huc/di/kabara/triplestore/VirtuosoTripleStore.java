@@ -82,14 +82,14 @@ public class VirtuosoTripleStore implements TripleStore {
         .custom()
         .setDefaultCredentialsProvider(credsProvider)
         .setRetryHandler((exception, executionCount, context) -> {
-          if (executionCount > 3) {
+          if (executionCount > 5) {
             LOG.warn("Maximum number of tries reached for Virtuoso sync");
             return false;
           }
 
           LOG.warn("No response from Virtuoso on try " + executionCount);
           try {
-            Thread.sleep(30000 * executionCount); // Half a minute * execution count
+            Thread.sleep(60000 * executionCount); // A minute * execution count
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
