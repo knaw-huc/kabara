@@ -40,11 +40,9 @@ public class VirtuosoImportManager implements ImportManager {
   @Override
   public Future<ImportStatus> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
                                      Optional<Charset> charset, MediaType mediaType) {
+    File file = null;
     try {
-      File file = new File("./tmp.gz");
-      if (file.exists()) {
-        file.delete();
-      }
+      file = File.createTempFile("kabara", null);
 
       try (OutputStream out = new GZIPOutputStream(new FileOutputStream(file))) {
         IOUtils.copy(rdfInputStream, out);
@@ -53,10 +51,10 @@ public class VirtuosoImportManager implements ImportManager {
       try (InputStream in = new GZIPInputStream(new FileInputStream(file))) {
         rdf4jRdfParser.importRdf(in, baseUri, defaultGraph, rdfProcessor, mediaType);
       }
-
-      file.delete();
     } catch (RdfProcessingFailedException | IOException e) {
       e.printStackTrace();
+    } finally {
+      file.delete();
     }
 
     return null;
