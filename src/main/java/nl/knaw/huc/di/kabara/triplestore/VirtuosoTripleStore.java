@@ -82,7 +82,7 @@ public class VirtuosoTripleStore implements TripleStore {
         .custom()
         .setDefaultCredentialsProvider(credsProvider)
         .setRetryHandler((exception, executionCount, context) -> {
-          if (executionCount > 5) {
+          if (executionCount > 10) {
             LOG.warn("Maximum number of tries reached for Virtuoso sync");
             return false;
           }
