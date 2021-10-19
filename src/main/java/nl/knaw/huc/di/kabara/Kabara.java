@@ -5,15 +5,18 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import nl.knaw.huc.di.kabara.health.KabaraHealthCheck;
+import nl.knaw.huc.di.kabara.rdfprocessing.parsers.NquadsUdParser;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
+import nl.knaw.huc.di.kabara.run.DatasetRunnableFactory;
 import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
+import org.eclipse.rdf4j.rio.RDFParserRegistry;
 
 import java.util.concurrent.ExecutorService;
 
 public class Kabara extends Application<KabaraConfiguration> {
   public static void main(String[] args) throws Exception {
+    RDFParserRegistry.getInstance().add(new NquadsUdParser.NquadsUdParserFactory());
     new Kabara().run(args);
   }
 
@@ -39,15 +42,12 @@ public class Kabara extends Application<KabaraConfiguration> {
     final ExecutorService kabaraExecutorService =
         environment.lifecycle().executorService("kabara").maxThreads(numThreads).build();
 
-    final KabaraHealthCheck healthCheck = new KabaraHealthCheck();
-    environment.healthChecks().register("template", healthCheck);
-
     final DataSetStatusManager dataSetStatusManager = configuration.getDataSetStatusManager();
-    final RunKabara runKabara =
-        new RunKabara(tripleStore, configuration.getResourcesyncTimeout(), dataSetStatusManager);
+    final DatasetRunnableFactory datasetRunnableFactory =
+        new DatasetRunnableFactory(tripleStore, configuration.getResourceSyncTimeout(), dataSetStatusManager);
 
     final KabaraResource resource = new KabaraResource(
-        kabaraExecutorService, runKabara, dataSetStatusManager, configuration.getPublicUrl());
+        kabaraExecutorService, datasetRunnableFactory, dataSetStatusManager, configuration.getPublicUrl());
     environment.jersey().register(resource);
   }
 }

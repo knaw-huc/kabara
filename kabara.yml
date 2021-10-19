@@ -5,13 +5,15 @@ server:
   adminConnectors:
     - type: http
       port: 9001
+
 dataSetStatusManager:
   path: ${DATA_PATH:- ./localData}
+
 tripleStore:
-  "@class": nl.knaw.huc.di.kabara.triplestore.VirtuosoTripleStore
-  url: ${VIRTUOSO_HOST:- http://localhost:8890}
-  user: dba
-  password: mysecret
-  sparQlAuthPath: sparql-auth
-resourcesyncTimeout: 15000
+  "@class": ${TRIPLE_STORE_CLASS:- nl.knaw.huc.di.kabara.triplestore.DefaultTripleStore}
+  url: ${TRIPLE_STORE_URL:- http://localhost:8890}
+  sparqlPath: ${TRIPLE_STORE_SPARQL_PATH:- /bigdata/sparql}
+  batchSize: ${TRIPLE_STORE_BATCH_SIZE:- 500}
+
+resourceSyncTimeout: ${RESOURCE_SYNC_TIMEOUT:- 15000}
 publicUrl: ${PUBLIC_URL:- http://localhost:9000}

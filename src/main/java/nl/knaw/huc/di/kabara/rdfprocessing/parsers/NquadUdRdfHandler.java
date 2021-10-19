@@ -1,4 +1,4 @@
-package nl.knaw.huc.di.kabara.rdfprocessing.rdf4j.parsers;
+package nl.knaw.huc.di.kabara.rdfprocessing.parsers;
 
 import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessingFailedException;
 import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessor;
@@ -55,7 +55,10 @@ public class NquadUdRdfHandler extends AbstractRDFHandler {
         throw new RDFHandlerException("Interrupted");
       }
 
-      String graph = st.getContext() == null ? defaultGraph : st.getContext().stringValue();
+      String graph = defaultGraph != null
+          ? defaultGraph
+          : (st.getContext() != null ? st.getContext().stringValue() : null);
+
       rdfProcessor.onQuad(
           isAssertion(),
           handleNode(st.getSubject()),

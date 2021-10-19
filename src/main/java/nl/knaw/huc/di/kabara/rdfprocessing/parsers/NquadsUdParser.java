@@ -1,4 +1,4 @@
-package nl.knaw.huc.di.kabara.rdfprocessing.rdf4j.parsers;
+package nl.knaw.huc.di.kabara.rdfprocessing.parsers;
 
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -17,17 +17,20 @@ import java.util.Stack;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.rdf4j.rio.RDFFormat.NO_NAMESPACES;
+import static org.eclipse.rdf4j.rio.RDFFormat.NO_RDF_STAR;
 import static org.eclipse.rdf4j.rio.RDFFormat.SUPPORTS_CONTEXTS;
 
 public class NquadsUdParser extends NQuadsParser {
   private static final RDFFormat NQUAD_UD_FORMAT = new RDFFormat(
-    "NQuadsUnifiedDiff",
-    "application/vnd.timbuctoo-rdf.nquads_unified_diff",
-    UTF_8,
-    "nqud",
-    NO_NAMESPACES,
-    SUPPORTS_CONTEXTS
+      "NQuadsUnifiedDiff",
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
+      UTF_8,
+      "nqud",
+      NO_NAMESPACES,
+      SUPPORTS_CONTEXTS,
+      NO_RDF_STAR
   );
+
   private final Stack<Integer> actions;
 
   public NquadsUdParser() {
@@ -36,7 +39,7 @@ public class NquadsUdParser extends NQuadsParser {
 
   @Override
   public synchronized void parse(Reader reader, String baseUri)
-    throws IOException, RDFParseException, RDFHandlerException {
+      throws IOException, RDFParseException, RDFHandlerException {
     if (reader == null) {
       throw new IllegalArgumentException("Reader can not be 'null'");
     }
@@ -84,7 +87,7 @@ public class NquadsUdParser extends NQuadsParser {
   }
 
   private int parseQuad(int character)
-    throws IOException, RDFParseException, RDFHandlerException {
+      throws IOException, RDFParseException, RDFHandlerException {
 
     boolean ignoredAnError = false;
     try {
@@ -113,8 +116,8 @@ public class NquadsUdParser extends NQuadsParser {
 
       character = assertLineTerminates(character);
     } catch (RDFParseException rdfpe) {
-      if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)) {
-        reportError(rdfpe, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+      if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_INVALID_LINES)) {
+        reportError(rdfpe, NTriplesParserSettings.FAIL_ON_INVALID_LINES);
         ignoredAnError = true;
       } else {
         throw rdfpe;
@@ -163,5 +166,4 @@ public class NquadsUdParser extends NQuadsParser {
       return new NquadsUdParser();
     }
   }
-
 }
