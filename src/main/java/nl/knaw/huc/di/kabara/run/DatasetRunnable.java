@@ -1,7 +1,7 @@
 package nl.knaw.huc.di.kabara.run;
 
-import nl.knaw.huc.di.kabara.status.DataSetStatus;
-import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
+import nl.knaw.huc.di.kabara.dataset.Dataset;
+import nl.knaw.huc.di.kabara.dataset.DatasetManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
@@ -15,36 +15,36 @@ public class DatasetRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetRunnable.class);
 
   private final TripleStore tripleStore;
+  private final DatasetManager datasetManager;
   private final int timeout;
-  private final DataSetStatusManager dataSetStatusManager;
-  private final String dataset;
   private final Date currentSync;
-  private final DataSetStatus dataSetStatus;
+  private Dataset dataset;
 
-  public DatasetRunnable(TripleStore tripleStore, int timeout, DataSetStatusManager dataSetStatusManager,
-                         String dataset, Date currentSync, DataSetStatus dataSetStatus) {
+  public DatasetRunnable(TripleStore tripleStore, DatasetManager datasetManager, int timeout,
+                         Date currentSync, Dataset dataset) {
     this.tripleStore = tripleStore;
+    this.datasetManager = datasetManager;
     this.timeout = timeout;
-    this.dataSetStatusManager = dataSetStatusManager;
-    this.dataset = dataset;
     this.currentSync = currentSync;
-    this.dataSetStatus = dataSetStatus;
+    this.dataset = dataset;
   }
 
   @Override
   public void run() {
     try {
-      LOG.info("dataset: " + dataset);
+      LOG.info(String.format("dataset: %s / %s / %s",
+          dataset.getTimbuctooEndpoint().getId(), dataset.getUserId(), dataset.getDatasetName()));
 
-      Date lastUpdate = dataSetStatus.getLastUpdate();
-      dataSetStatus.updateLatestSync(currentSync);
+      dataset = datasetManager.reloadDataset(dataset);
+      Date lastUpdate = dataset.getLastUpdate();
+      dataset.updateLatestSync(currentSync);
 
       ResourceSyncImport rsi = new ResourceSyncImport(new ResourceSyncFileLoader(timeout), true);
-      SyncImportManager im = new SyncImportManager(dataSetStatus.getGraphUri(),
-          tripleStore.createRdfProcessor(this::updateCurrentSyncStatus), this::updateLastUpdate);
+      SyncImportManager im =
+          new SyncImportManager(dataset, datasetManager, tripleStore.createRdfProcessor(this::updateCurrentSyncStatus));
 
       updateCurrentSyncStatus("Start import");
-      rsi.filterAndImport(dataset, null, null, lastUpdate, im);
+      rsi.filterAndImport(dataset.getCapabilityListUrl(), null, null, lastUpdate, im);
 
       if (im.getImportCount() > 0) {
         updateCurrentSyncStatus(String.format("Import succeeded (Files imported: %s)", im.getImportCount()));
@@ -62,12 +62,7 @@ public class DatasetRunnable implements Runnable {
   }
 
   private void updateCurrentSyncStatus(String status) throws IOException {
-    dataSetStatus.updateStatus(currentSync, status);
-    dataSetStatusManager.updateStatus(dataset, dataSetStatus);
-  }
-
-  private void updateLastUpdate(Date dateTime) throws IOException {
-    dataSetStatus.updateLastUpdate(dateTime);
-    dataSetStatusManager.updateStatus(dataset, dataSetStatus);
+    dataset.updateStatus(currentSync, status);
+    datasetManager.updateDataset(dataset);
   }
 }

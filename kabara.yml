@@ -6,7 +6,15 @@ server:
     - type: http
       port: 9001
 
-dataSetStatusManager:
+timbuctooEndpoints:
+  - id: huygens
+    url: https://repository.huygens.knaw.nl
+  - id: ga
+    url: https://repository.goldenagents.org
+  - id: anansi
+    url: https://data.anansi.clariah.nl
+
+datasetManager:
   path: ${DATA_PATH:- ./localData}
 
 tripleStore:

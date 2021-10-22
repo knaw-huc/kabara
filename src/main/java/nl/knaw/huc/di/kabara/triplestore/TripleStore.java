@@ -3,7 +3,7 @@ package nl.knaw.huc.di.kabara.triplestore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.lifecycle.Managed;
 import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessor;
-import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
+import nl.knaw.huc.di.kabara.dataset.DataSetStatusUpdater;
 
 import java.io.IOException;
 

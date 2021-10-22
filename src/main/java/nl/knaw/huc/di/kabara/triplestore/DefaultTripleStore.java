@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessor;
 import nl.knaw.huc.di.kabara.rdfprocessing.SparqlUpdateRdfProcessor;
-import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
+import nl.knaw.huc.di.kabara.dataset.DataSetStatusUpdater;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;

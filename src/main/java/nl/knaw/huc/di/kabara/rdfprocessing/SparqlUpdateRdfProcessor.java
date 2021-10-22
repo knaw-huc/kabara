@@ -1,6 +1,6 @@
 package nl.knaw.huc.di.kabara.rdfprocessing;
 
-import nl.knaw.huc.di.kabara.status.DataSetStatusUpdater;
+import nl.knaw.huc.di.kabara.dataset.DataSetStatusUpdater;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

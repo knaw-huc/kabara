@@ -1,8 +1,9 @@
 package nl.knaw.huc.di.kabara.run;
 
+import nl.knaw.huc.di.kabara.dataset.DatasetManager;
 import nl.knaw.huc.di.kabara.rdfprocessing.RdfProcessor;
 import nl.knaw.huc.di.kabara.rdfprocessing.parsers.NquadUdRdfHandler;
-import nl.knaw.huc.di.kabara.status.DataSetLastUpdateWriter;
+import nl.knaw.huc.di.kabara.dataset.Dataset;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -22,17 +23,16 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class SyncImportManager implements ResourceSyncImport.WithFile {
-  private final String defaultGraph;
+  private final Dataset dataset;
+  private final DatasetManager datasetManager;
   private final RdfProcessor rdfProcessor;
-  private final DataSetLastUpdateWriter dataSetLastUpdateWriter;
 
   private int counter = 0;
 
-  public SyncImportManager(String defaultGraph, RdfProcessor rdfProcessor,
-                           DataSetLastUpdateWriter dataSetLastUpdateWriter) {
-    this.defaultGraph = defaultGraph;
+  public SyncImportManager(Dataset dataset, DatasetManager datasetManager, RdfProcessor rdfProcessor) {
+    this.dataset = dataset;
+    this.datasetManager = datasetManager;
     this.rdfProcessor = rdfProcessor;
-    this.dataSetLastUpdateWriter = dataSetLastUpdateWriter;
   }
 
   @Override
@@ -51,11 +51,13 @@ public class SyncImportManager implements ResourceSyncImport.WithFile {
       try (InputStream in = new GZIPInputStream(new FileInputStream(file))) {
         RDFParser rdfParser = Rio.createParser(format);
         rdfParser.setPreserveBNodeIDs(true);
-        rdfParser.setRDFHandler(new NquadUdRdfHandler(rdfProcessor, defaultGraph));
+        rdfParser.setRDFHandler(new NquadUdRdfHandler(rdfProcessor, dataset.getGraphUri()));
         rdfParser.parse(in, url);
       }
 
-      dataSetLastUpdateWriter.updateLastUpdate(dateTime);
+      dataset.updateLastUpdate(dateTime);
+      datasetManager.updateDataset(dataset);
+
       counter++;
     } catch (IOException e) {
       e.printStackTrace();

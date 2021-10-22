@@ -1,4 +1,4 @@
-package nl.knaw.huc.di.kabara.status;
+package nl.knaw.huc.di.kabara.dataset;
 
 import java.io.IOException;
 

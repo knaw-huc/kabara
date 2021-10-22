@@ -1,6 +1,7 @@
-version: '2.1'
+version: '2'
+
 services:
-  my_virtdb:
+  virtuoso:
     image: tenforce/virtuoso:1.3.1-virtuoso7.2.2
     environment:
       SPARQL_UPDATE: "true"
@@ -10,12 +11,14 @@ services:
     ports:
       - "1111:1111"
       - "8890:8890"
+
   kabara:
-    image: kabara:local
+    image: registry.diginfra.net/tsd/kabara:latest
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      VIRTUOSO_HOST: "http://kabara_my_virtdb_1:8890"
+      TRIPLE_STORE_URL: "http://virtuoso:8890"
+      TRIPLE_STORE_SPARQL_PATH: "/sparql-auth"
       DATA_PATH: ./data
       PUBLIC_URL: http://localhost:9000

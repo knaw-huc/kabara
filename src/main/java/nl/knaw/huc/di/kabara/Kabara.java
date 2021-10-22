@@ -8,7 +8,7 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huc.di.kabara.rdfprocessing.parsers.NquadsUdParser;
 import nl.knaw.huc.di.kabara.resources.KabaraResource;
 import nl.knaw.huc.di.kabara.run.DatasetRunnableFactory;
-import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
+import nl.knaw.huc.di.kabara.dataset.DatasetManager;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
 
@@ -42,12 +42,13 @@ public class Kabara extends Application<KabaraConfiguration> {
     final ExecutorService kabaraExecutorService =
         environment.lifecycle().executorService("kabara").maxThreads(numThreads).build();
 
-    final DataSetStatusManager dataSetStatusManager = configuration.getDataSetStatusManager();
+    final DatasetManager datasetManager = configuration.getDatasetManager();
     final DatasetRunnableFactory datasetRunnableFactory =
-        new DatasetRunnableFactory(tripleStore, configuration.getResourceSyncTimeout(), dataSetStatusManager);
+        new DatasetRunnableFactory(tripleStore, configuration.getResourceSyncTimeout(), datasetManager);
 
     final KabaraResource resource = new KabaraResource(
-        kabaraExecutorService, datasetRunnableFactory, dataSetStatusManager, configuration.getPublicUrl());
+        kabaraExecutorService, datasetRunnableFactory, datasetManager,
+        configuration.getTimbuctooEndpoints(), configuration.getPublicUrl());
     environment.jersey().register(resource);
   }
 }

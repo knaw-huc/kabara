@@ -2,15 +2,21 @@ package nl.knaw.huc.di.kabara;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
-import nl.knaw.huc.di.kabara.status.DataSetStatusManager;
+import nl.knaw.huc.di.kabara.dataset.DatasetManager;
+import nl.knaw.huc.di.kabara.dataset.TimbuctooEndpoint;
 import nl.knaw.huc.di.kabara.triplestore.TripleStore;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 public class KabaraConfiguration extends Configuration {
   @JsonProperty
   @NotNull
-  private DataSetStatusManager dataSetStatusManager;
+  private List<TimbuctooEndpoint> timbuctooEndpoints;
+
+  @JsonProperty
+  @NotNull
+  private DatasetManager datasetManager;
 
   @JsonProperty
   @NotNull
@@ -24,8 +30,12 @@ public class KabaraConfiguration extends Configuration {
   @NotNull
   private String publicUrl;
 
-  public DataSetStatusManager getDataSetStatusManager() {
-    return dataSetStatusManager;
+  public List<TimbuctooEndpoint> getTimbuctooEndpoints() {
+    return timbuctooEndpoints;
+  }
+
+  public DatasetManager getDatasetManager() {
+    return datasetManager;
   }
 
   public TripleStore getTripleStore() {

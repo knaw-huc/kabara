@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  blazegraph:
+    image: lyrasis/blazegraph:2.1.5
+    volumes:
+      - ./data/blazegraph:/data
+    ports:
+      - "8889:8080"
+
+  kabara:
+    image: registry.diginfra.net/tsd/kabara:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      TRIPLE_STORE_URL: "http://virtuoso:8889"
+      TRIPLE_STORE_SPARQL_PATH: "/bigdata/sparql"
+      DATA_PATH: ./data
+      PUBLIC_URL: http://localhost:9000
