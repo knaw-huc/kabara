@@ -23,5 +23,5 @@ tripleStore:
   sparqlPath: ${TRIPLE_STORE_SPARQL_PATH:- /bigdata/sparql}
   batchSize: ${TRIPLE_STORE_BATCH_SIZE:- 500}
 
-resourceSyncTimeout: ${RESOURCE_SYNC_TIMEOUT:- 15000}
+resourceSyncTimeout: ${RESOURCE_SYNC_TIMEOUT:- 150000}
 publicUrl: ${PUBLIC_URL:- http://localhost:9000}
