@@ -35,7 +35,7 @@ to update the configuration of Kabara:
 * `TRIPLE_STORE_CLASS`: The Java class to use to configure the triple store
 * `TRIPLE_STORE_URL`: The URL of the triple store
 * `TRIPLE_STORE_SPARQL_PATH`: The path to the SPARQL endpoint
-* `TRIPLE_STORE_BATCH_SIZE`: The batch size of the `INSERT/DELETE` commands to sync the RDF data
+* `TRIPLE_STORE_BATCH_SIZE`: The batch size of the `INSERT/DELETE` commands to timbuctooSync the RDF data
 * `RESOURCE_SYNC_TIMEOUT`: Timeout to read from the Timbuctoo ResourceSync endpoint
 * `PUBLIC_URL`: Public URL of the Kabara application
 
@@ -51,7 +51,7 @@ curl -v -XPOST http://localhost:9000/<endpoint>/<user_id>/<dataset_name>
 
 The `endpoint` is the id to the Timbuctoo instance. These are specified in the configuration file `kabara.yml`.
 
-You can also specify an alternative graph URI and whether to automatically sync the data when the data changes in
+You can also specify an alternative graph URI and whether to automatically timbuctooSync the data when the data changes in
 Timbuctoo:
 
 ```console
@@ -64,8 +64,8 @@ You can track progress and the configuration of a dataset:
 curl http://localhost:9000/<endpoint>/<user_id>/<dataset_name>
 ```
 
-To request a sync, call:
+To request a timbuctooSync, call:
 
 ```console
-curl -v -XPOST http://localhost:9000/<endpoint>/<user_id>/<dataset_name>/sync
+curl -v -XPOST http://localhost:9000/<endpoint>/<user_id>/<dataset_name>/timbuctooSync
 ```

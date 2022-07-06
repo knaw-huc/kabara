@@ -14,14 +14,15 @@ timbuctooEndpoints:
   - id: anansi
     url: https://data.anansi.clariah.nl
 
-datasetManager:
+tripleStores:
+  - "@class": ${TRIPLE_STORE_CLASS:- nl.knaw.huc.di.kabara.triplestore.DefaultTripleStore}
+    id: ${TRIPLE_STORE_ID:- sparql}
+    url: ${TRIPLE_STORE_URL:- http://localhost:8890}
+    sparqlPath: ${TRIPLE_STORE_SPARQL_PATH:- /bigdata/sparql}
+    sparqlWritePath: ${TRIPLE_STORE_SPARQL_WRITE_PATH:- /bigdata/sparql}
+    batchSize: ${TRIPLE_STORE_BATCH_SIZE:- 500}
+
+syncManager:
   path: ${DATA_PATH:- ./localData}
 
-tripleStore:
-  "@class": ${TRIPLE_STORE_CLASS:- nl.knaw.huc.di.kabara.triplestore.DefaultTripleStore}
-  url: ${TRIPLE_STORE_URL:- http://localhost:8890}
-  sparqlPath: ${TRIPLE_STORE_SPARQL_PATH:- /bigdata/sparql}
-  batchSize: ${TRIPLE_STORE_BATCH_SIZE:- 500}
-
-resourceSyncTimeout: ${RESOURCE_SYNC_TIMEOUT:- 150000}
 publicUrl: ${PUBLIC_URL:- http://localhost:9000}

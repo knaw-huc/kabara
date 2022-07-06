@@ -5,18 +5,16 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import nl.knaw.huc.di.kabara.rdfprocessing.parsers.NquadsUdParser;
-import nl.knaw.huc.di.kabara.resources.KabaraResource;
-import nl.knaw.huc.di.kabara.run.DatasetRunnableFactory;
-import nl.knaw.huc.di.kabara.dataset.DatasetManager;
-import nl.knaw.huc.di.kabara.triplestore.TripleStore;
-import org.eclipse.rdf4j.rio.RDFParserRegistry;
+import nl.knaw.huc.di.kabara.sync.graphdb_timbuctoo.GraphDBTimbuctooResource;
+import nl.knaw.huc.di.kabara.sync.timbuctoo_sparql.TimbuctooSparqlResource;
+import nl.knaw.huc.di.kabara.sync.SyncManager;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import java.util.concurrent.ExecutorService;
 
 public class Kabara extends Application<KabaraConfiguration> {
   public static void main(String[] args) throws Exception {
-    RDFParserRegistry.getInstance().add(new NquadsUdParser.NquadsUdParserFactory());
     new Kabara().run(args);
   }
 
@@ -35,20 +33,20 @@ public class Kabara extends Application<KabaraConfiguration> {
 
   @Override
   public void run(KabaraConfiguration configuration, Environment environment) {
-    final TripleStore tripleStore = configuration.getTripleStore();
-    environment.lifecycle().manage(tripleStore);
-
     final int numThreads = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
     final ExecutorService kabaraExecutorService =
         environment.lifecycle().executorService("kabara").maxThreads(numThreads).build();
 
-    final DatasetManager datasetManager = configuration.getDatasetManager();
-    final DatasetRunnableFactory datasetRunnableFactory =
-        new DatasetRunnableFactory(tripleStore, configuration.getResourceSyncTimeout(), datasetManager);
+    environment.jersey().register(new KabaraResource());
+    environment.jersey().register(new TimbuctooSparqlResource(kabaraExecutorService, configuration));
+    environment.jersey().register(new GraphDBTimbuctooResource(kabaraExecutorService, configuration));
+  }
 
-    final KabaraResource resource = new KabaraResource(
-        kabaraExecutorService, datasetRunnableFactory, datasetManager,
-        configuration.getTimbuctooEndpoints(), configuration.getPublicUrl());
-    environment.jersey().register(resource);
+  @Path("/")
+  public static final class KabaraResource {
+    @GET
+    public String checkActive() {
+      return "Kabara active";
+    }
   }
 }

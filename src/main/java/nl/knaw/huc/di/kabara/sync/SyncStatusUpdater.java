@@ -1,8 +1,8 @@
-package nl.knaw.huc.di.kabara.dataset;
+package nl.knaw.huc.di.kabara.sync;
 
 import java.io.IOException;
 
 @FunctionalInterface
-public interface DataSetStatusUpdater {
+public interface SyncStatusUpdater {
   void updateStatus(String statusUpdate) throws IOException;
 }
