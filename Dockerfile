@@ -6,7 +6,7 @@ WORKDIR /build/kabara
 COPY . /build/kabara
 RUN mvn clean package
 
-FROM openjdk:17-jre-slim
+FROM openjdk:17-slim
 
 COPY --from=builder /build/kabara/target/appassembler /app
 COPY --from=builder /build/kabara/kabara.yml /app/kabara.yml
