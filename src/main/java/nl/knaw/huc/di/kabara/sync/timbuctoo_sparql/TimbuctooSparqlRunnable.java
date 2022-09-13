@@ -2,9 +2,9 @@ package nl.knaw.huc.di.kabara.sync.timbuctoo_sparql;
 
 import nl.knaw.huc.di.kabara.sync.SyncManager;
 import nl.knaw.huc.di.kabara.sync.SyncRunnable;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.RdfProcessor;
 
 import java.util.Date;
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import nl.knaw.huc.di.kabara.processors.SparqlUpdateRdfProcessor;
 import nl.knaw.huc.di.kabara.sync.SyncStatusUpdater;
 import nl.knaw.huc.di.kabara.util.HttpClientBuilder;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RdfProcessor;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -14,7 +15,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.RdfProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

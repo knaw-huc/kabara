@@ -1,14 +1,14 @@
 package nl.knaw.huc.di.kabara.sync.timbuctoo_sparql;
 
 import nl.knaw.huc.di.kabara.sync.SyncManager;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdHandler;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncImport;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.NQuadsUdHandler;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.RdfProcessor;
 
 import java.io.IOException;
 import java.io.InputStream;

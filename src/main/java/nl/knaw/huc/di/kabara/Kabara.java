@@ -7,7 +7,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huc.di.kabara.sync.graphdb_timbuctoo.GraphDBTimbuctooResource;
 import nl.knaw.huc.di.kabara.sync.timbuctoo_sparql.TimbuctooSparqlResource;
-import nl.knaw.huc.di.kabara.sync.SyncManager;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

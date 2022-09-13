@@ -2,8 +2,8 @@ package nl.knaw.huc.di.kabara.processors;
 
 import nl.knaw.huc.di.kabara.sync.SyncStatusUpdater;
 import nl.knaw.huc.di.kabara.endpoints.TripleStore;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.RdfProcessingFailedException;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.RdfProcessor;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RdfProcessingFailedException;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.RdfProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

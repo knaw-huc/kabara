@@ -2,8 +2,8 @@ package nl.knaw.huc.di.kabara.sync.graphdb_timbuctoo;
 
 import nl.knaw.huc.di.kabara.sync.SyncManager;
 import nl.knaw.huc.di.kabara.sync.SyncRunnable;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.NQuadsUdParserFactory;
-import org.knaw.huc.di.rdf4j.rio.nquadsnd.NQuadsUdWriter;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdParserFactory;
+import nl.knaw.huc.rdf4j.rio.nquadsnd.NQuadsUdWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
